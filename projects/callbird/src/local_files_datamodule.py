@@ -54,6 +54,8 @@ class LocalFilesDataModule(BirdSetDataModule):
             **dataset_args,
         )
 
+        dataset = dataset.filter(lambda x: x["ebird_code"] is not None)
+
         # Rename 'audio_filename' to 'filepath' to match what the base class expects.
         dataset = dataset.rename_column("audio_filename", "filepath")
 
@@ -93,9 +95,29 @@ class LocalFilesDataModule(BirdSetDataModule):
         dataset = self._ensure_train_test_splits(dataset)
         def add_multilabel_column(example):
             example["ebird_code_multilabel"] = example["ebird_code"]
+            # example["labels"] = example["ebird_code"]
             return example
         
         dataset = dataset.map(add_multilabel_column)
+
+        labels = set()
+        for split in dataset.keys():
+            labels.update(dataset[split]["ebird_code_multilabel"])
+        labels = sorted(labels)  # Sort to ensure consistent ordering
+        label_to_id = {lbl: i for i, lbl in enumerate(labels)}
+
+        def label_to_id_fn(batch):
+            for i in range(len(batch["ebird_code_multilabel"])):
+                batch["ebird_code_multilabel"][i] = label_to_id[batch["ebird_code_multilabel"][i]]
+            return batch
+
+        dataset = dataset.map(
+            label_to_id_fn,
+            batched=True,
+            batch_size=500,
+            load_from_cache_file=True,
+            num_proc=self.dataset_config.n_workers,
+        )
 
         if "test" in dataset:
            dataset["test_5s"] = dataset["test"]

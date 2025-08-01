@@ -1,0 +1,17 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug BioFoundation",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "./birdset/train.py --config-path '../projects/callbird/configs' --config-dir 'configs' 'logger=wandb_CallBird'",
+            "console": "integratedTerminal",
+            "args": "${command:pickArgs}",
+            "justMyCode": false
+        },
+    ]
+}
