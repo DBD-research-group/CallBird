@@ -18,10 +18,10 @@ def convert_txt_to_csv(directory, target_directory="csv_test"):
 
     global_initial_line = ""
     for chunk_name in chunk_files:
-        chunk_count = chunk_counts[chunk_name]
-        if chunk_count < 10:
-            print(f"Warning: Chunk {chunk_name} has less than 10 files, skipping.")
-            continue
+        # chunk_count = chunk_counts[chunk_name]
+        # if chunk_count < 10:
+        #     print(f"Warning: Chunk {chunk_name} has less than 10 files, skipping.")
+        #     continue
 
         initial_line = ""
         output_file = os.path.join(target_directory, f"{chunk_name}.csv")
