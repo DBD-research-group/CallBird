@@ -57,7 +57,7 @@ datamodule:
         n_stft: 1025
   loaders:
     train:
-      batch_size: 128
+      batch_size: 16
       num_workers: 1
     valid:
       batch_size: 128
@@ -65,9 +65,7 @@ datamodule:
     test:
       batch_size: 128
       num_workers: 1
-  mapper:
-    biggest_cluster: True
-    no_call: False
+  mapper: null
 
 callbacks:
   model_checkpoint:

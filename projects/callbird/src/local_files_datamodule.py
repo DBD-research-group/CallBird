@@ -78,9 +78,7 @@ class LocalFilesDataModule(BirdSetDataModule):
             'event_cluster' is set to a default value of [0], as we assume
             each row represents a single, valid event cluster.
             """
-            example["detected_events"] = [
-                (example["start_time"], example["end_time"])
-            ]
+            example["detected_events"] = (example["start_time"], example["end_time"])
             example["event_cluster"] = [0] # Add the event_cluster column
             return example
 
