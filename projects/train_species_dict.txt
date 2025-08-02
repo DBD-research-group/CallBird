@@ -1,0 +1,768 @@
+Red Crossbill: 12
+> N06
+> N04
+> N03
+> N09
+> N15
+> N01
+> N02
+> N05
+> N11
+> NA
+> N07
+> N08
+
+Parrot Crossbill: 3
+> N21
+> N01
+> NA
+
+Willow Tit: 2
+> montanus
+> NA
+
+Eurasian Bullfinch: 2
+> pyrrhula
+> NA
+
+Spotted Crake: 1
+> NA
+
+Lesser Whitethroat: 1
+> NA
+
+Lesser Spotted Woodpecker: 1
+> NA
+
+Common Cuckoo: 1
+> NA
+
+Common Toad: 1
+> NA
+
+Common Chiffchaff: 1
+> NA
+
+no bird: 1
+> NA
+
+Silence: 1
+> NA
+
+Great Spotted Woodpecker: 1
+> NA
+
+Water Rail: 1
+> NA
+
+medium rain: 1
+> NA
+
+Common Grasshopper Warbler: 1
+> NA
+
+Black Woodpecker: 1
+> NA
+
+Eurasian Skylark: 1
+> NA
+
+Eurasian Green Woodpecker: 1
+> NA
+
+Common Quail: 1
+> NA
+
+Traffic: 1
+> NA
+
+Sedge Warbler: 1
+> NA
+
+Tree Pipit: 1
+> NA
+
+Eurasian Blackcap: 1
+> NA
+
+Wind: 1
+> NA
+
+Tawny Owl: 1
+> NA
+
+Common Wood-Pigeon: 1
+> NA
+
+Song Thrush: 1
+> NA
+
+Great Green Bush-Cricket: 1
+> NA
+
+Eurasian Woodcock: 1
+> NA
+
+Willow Warbler: 1
+> NA
+
+Eurasian Blackbird: 1
+> NA
+
+Northern Lapwing: 1
+> NA
+
+Water Pipit: 1
+> NA
+
+Crested Tit: 1
+> NA
+
+Common Reed Warbler: 1
+> NA
+
+Goldcrest: 1
+> NA
+
+Eurasian Thick-knee: 1
+> NA
+
+Common Buzzard: 1
+> NA
+
+Common Chaffinch: 1
+> NA
+
+European Starling: 1
+> NA
+
+Moor Frog: 1
+> NA
+
+Mistle Thrush: 1
+> NA
+
+Carrion Crow: 1
+> NA
+
+Common Redstart: 1
+> NA
+
+Savi's Warbler: 1
+> NA
+
+Black-headed Gull: 1
+> NA
+
+Bluethroat: 1
+> NA
+
+Little Grebe: 1
+> NA
+
+Wind turbine: 1
+> NA
+
+Common Rosefinch: 1
+> NA
+
+White Wagtail: 1
+> NA
+
+Hawfinch: 1
+> NA
+
+Eurasian Linnet: 1
+> NA
+
+Marsh Tit: 1
+> NA
+
+European Robin: 1
+> NA
+
+Great Tit: 1
+> NA
+
+Dunnock: 1
+> NA
+
+Boreal Owl: 1
+> NA
+
+Hexapoda sp. sounds in flight: 1
+> NA
+
+Meadow Pipit: 1
+> NA
+
+Coal Tit: 1
+> NA
+
+Gray Heron: 1
+> NA
+
+Artificial: 1
+> NA
+
+Eurasian Dotterel: 1
+> NA
+
+Eurasian Scops-Owl: 1
+> NA
+
+Wood Lark: 1
+> NA
+
+Graylag Goose: 1
+> NA
+
+Rock Ptarmigan: 1
+> NA
+
+Collared Flycatcher: 1
+> NA
+
+Ortolan Bunting: 1
+> NA
+
+Green Frog: 1
+> NA
+
+Great Reed Warbler: 1
+> NA
+
+Western Yellow Wagtail: 1
+> NA
+
+Eurasian Coot: 1
+> NA
+
+Eurasian Nuthatch: 1
+> NA
+
+Plane: 1
+> NA
+
+Greater Whitethroat: 1
+> NA
+
+Eurasian Jay: 1
+> NA
+
+Long-eared Owl: 1
+> NA
+
+Northern Shoveler: 1
+> NA
+
+European Pied Flycatcher: 1
+> NA
+
+Common Nightingale: 1
+> NA
+
+Eurasian Eagle-Owl: 1
+> NA
+
+Eurasian Kestrel: 1
+> NA
+
+Chicken: 1
+> NA
+
+Gray-headed Woodpecker: 1
+> NA
+
+Common Redshank: 1
+> NA
+
+Ural Owl: 1
+> NA
+
+Eurasian Wren: 1
+> NA
+
+Eurasian Curlew: 1
+> NA
+
+Eurasian Pygmy-Owl: 1
+> NA
+
+Common Ringed Plover: 1
+> NA
+
+Common Crane: 1
+> NA
+
+Black Redstart: 1
+> NA
+
+European Serin: 1
+> NA
+
+Dog: 1
+> NA
+
+Eurasian Wigeon: 1
+> NA
+
+Reed Bunting: 1
+> NA
+
+Eurasian Nutcracker: 1
+> NA
+
+Spotted Flycatcher: 1
+> NA
+
+Baillon's Crake: 1
+> NA
+
+Western Capercaillie: 1
+> NA
+
+Stock Dove: 1
+> NA
+
+Mallard: 1
+> NA
+
+Eurasian Wryneck: 1
+> NA
+
+Red-breasted Flycatcher: 1
+> NA
+
+European Goldfinch: 1
+> NA
+
+Green Sandpiper: 1
+> NA
+
+Common Gull: 1
+> NA
+
+Citril Finch: 1
+> NA
+
+Eurasian Nightjar: 1
+> NA
+
+Red-backed Shrike: 1
+> NA
+
+Common Firecrest: 1
+> NA
+
+Common Goldeneye: 1
+> NA
+
+Eurasian Blue Tit: 1
+> NA
+
+Barnacle Goose: 1
+> NA
+
+Storm: 1
+> NA
+
+Recorder error: 1
+> NA
+
+Green-winged Teal: 1
+> NA
+
+European Greenfinch: 1
+> NA
+
+Eurasian Collared-Dove: 1
+> NA
+
+Little Ringed Plover: 1
+> NA
+
+Icterine Warbler: 1
+> NA
+
+Great Bittern: 1
+> NA
+
+Eurasian Siskin: 1
+> NA
+
+Hazel Grouse: 1
+> NA
+
+Rook: 1
+> NA
+
+Eurasian Moorhen: 1
+> NA
+
+little rain: 1
+> NA
+
+Bell: 1
+> NA
+
+Engine: 1
+> NA
+
+Middle Spotted Woodpecker: 1
+> NA
+
+Roe Deer: 1
+> NA
+
+Common Kingfisher: 1
+> NA
+
+Ring Ouzel: 1
+> NA
+
+Garden Warbler: 1
+> NA
+
+Herring Gull: 1
+> NA
+
+Alpine Accentor: 1
+> NA
+
+Tufted Duck: 1
+> NA
+
+Eurasian Golden Oriole: 1
+> NA
+
+Eurasian Treecreeper: 1
+> NA
+
+Eurasian Oystercatcher: 1
+> NA
+
+Sheep: 1
+> NA
+
+Barn Owl: 1
+> NA
+
+Common Raven: 1
+> NA
+
+Barn Swallow: 1
+> NA
+
+White-backed Woodpecker: 1
+> NA
+
+Wild Boar: 1
+> NA
+
+Common Snipe: 1
+> NA
+
+Little Bittern: 1
+> NA
+
+Gray Wagtail: 1
+> NA
+
+Human vocal: 1
+> NA
+
+House Sparrow: 1
+> NA
+
+Eurasian Jackdaw: 1
+> NA
+
+Black Grouse: 1
+> NA
+
+Red Kite: 1
+> NA
+
+Marsh Warbler: 1
+> NA
+
+Gadwall: 1
+> NA
+
+Wood Warbler: 1
+> NA
+
+Zitting Cisticola: 1
+> NA
+
+European Golden-Plover: 1
+> NA
+
+Garganey: 1
+> NA
+
+Little Owl: 1
+> NA
+
+White-throated Dipper: 1
+> NA
+
+Eurasian Sparrowhawk: 1
+> NA
+
+Red Fox: 1
+> NA
+
+Common Sandpiper: 1
+> NA
+
+Tawny Pipit: 1
+> NA
+
+Ruddy Turnstone: 1
+> NA
+
+Fieldfare: 1
+> NA
+
+Human non-vocal: 1
+> NA
+
+Yellowhammer: 1
+> NA
+
+Power tools: 1
+> NA
+
+Orthoptera sp.: 1
+> NA
+
+Lesser Redpoll: 1
+> NA
+
+Eurasian Three-toed Woodpecker: 1
+> NA
+
+Red Deer: 1
+> NA
+
+Short-eared Owl: 1
+> NA
+
+Yellow-billed Chough: 1
+> NA
+
+European Bee-eater: 1
+> NA
+
+Dunlin: 1
+> NA
+
+European Turtle-Dove: 1
+> NA
+
+Eurasian Penduline-Tit: 1
+> NA
+
+European Tree Frog: 1
+> NA
+
+Northern Pintail: 1
+> NA
+
+Purple Heron: 1
+> NA
+
+Mediterranean Gull: 1
+> NA
+
+European Field Cricket: 1
+> NA
+
+Natterjack Toad: 1
+> NA
+
+White-winged Snowfinch: 1
+> NA
+
+European Mole Cricket: 1
+> NA
+
+Wood Sandpiper: 1
+> NA
+
+European Honey-buzzard: 1
+> NA
+
+Eurasian Magpie: 1
+> NA
+
+Ring-necked Pheasant: 1
+> NA
+
+Western Bonelli's Warbler: 1
+> NA
+
+Wallcreeper: 1
+> NA
+
+Eurasian Hobby: 1
+> NA
+
+Long-tailed Tit: 1
+> NA
+
+Common Swift: 1
+> NA
+
+Yellow-legged Gull: 1
+> NA
+
+Short-toed Treecreeper: 1
+> NA
+
+Alpine Swift: 1
+> NA
+
+Rock Bunting: 1
+> NA
+
+Hexapoda sp.: 1
+> NA
+
+Mute Swan: 1
+> NA
+
+Corn Bunting: 1
+> NA
+
+European Stonechat: 1
+> NA
+
+Eurasian Tree Sparrow: 1
+> NA
+
+Horn: 1
+> NA
+
+Raccoon: 1
+> NA
+
+Caspian Tern: 1
+> NA
+
+Common Pochard: 1
+> NA
+
+Stone- or Tree Marten: 1
+> NA
+
+Common Shelduck: 1
+> NA
+
+Great Cormorant: 1
+> NA
+
+Little Tern: 1
+> NA
+
+Gray Seal: 1
+> NA
+
+other: 1
+> NA
+
+Tree sounds: 1
+> NA
+
+Peregrine Falcon: 1
+> NA
+
+Gray Partridge: 1
+> NA
+
+Bearded Reedling: 1
+> NA
+
+Stone Marten: 1
+> NA
+
+Whooper Swan: 1
+> NA
+
+Sandwich Tern: 1
+> NA
+
+White Stork: 1
+> NA
+
+Rock Pigeon: 1
+> NA
+
+Common Tern: 1
+> NA
+
+Eurasian Hoopoe: 1
+> NA
+
+Aquatic Warbler: 1
+> NA
+
+Domestic cat: 1
+> NA
+
+Golden Jackal: 1
+> NA
+
+Northern Wheatear: 1
+> NA
+
+Human whistle: 1
+> NA
+
+Golden Eagle: 1
+> NA
+
+Black Kite: 1
+> NA
+
+Cow: 1
+> NA
+
+Little Crake: 1
+> NA
+
+Whinchat: 1
+> NA
+
+Cirl Bunting: 1
+> NA
+
+heavy rain: 1
+> NA
+
+Osprey: 1
+> NA
+
+Hooded Crow: 1
+> NA
+
+windy: 1
+> NA
+
+Lesser Black-backed Gull: 1
+> NA
+
+Great Crested Grebe: 1
+> NA
+
+Pied Avocet: 1
+> NA
+
+Gray Wolf: 1
+> NA
+
+Great Black-backed Gull: 1
+> NA
+

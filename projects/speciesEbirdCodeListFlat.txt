@@ -1,0 +1,55 @@
+Red Crossbill : redcro
+Willow Tit : wiltit1
+Eurasian Bullfinch : eurbul
+Common Cuckoo : comcuc
+Common Chiffchaff : comchi1
+Great Spotted Woodpecker : grswoo
+Black Woodpecker : blawoo1
+Eurasian Skylark : skylar
+Eurasian Green Woodpecker : eugwoo2
+Tree Pipit : trepip
+Eurasian Blackcap : blackc1
+Tawny Owl : tawowl1
+Common Wood-Pigeon : cowpig1
+Song Thrush : sonthr1
+Eurasian Woodcock : eurwoo
+Willow Warbler : wlwwar
+Eurasian Blackbird : eurbla
+Northern Lapwing : norlap
+Crested Tit : cretit2
+Goldcrest : goldcr1
+Common Chaffinch : comcha
+European Starling : eursta
+Mistle Thrush : misthr1
+Carrion Crow : carcro1
+Hawfinch : hawfin
+Marsh Tit : martit2
+European Robin : eurrob1
+Great Tit : gretit1
+Dunnock : dunnoc1
+Coal Tit : coatit2
+Eurasian Nuthatch : eurnut2
+Greater Whitethroat : grewhi1
+Eurasian Jay : eurjay1
+European Pied Flycatcher : eupfly1
+Common Nightingale : comnig1
+Gray-headed Woodpecker : gyfwoo1
+Eurasian Wren : winwre4
+Spotted Flycatcher : spofly1
+Stock Dove : stodov1
+European Goldfinch : eurgol
+Common Firecrest : firecr1
+Eurasian Blue Tit : blutit
+European Greenfinch : eurgre1
+Eurasian Siskin : eursis
+Middle Spotted Woodpecker : miswoo1
+Garden Warbler : garwar1
+Eurasian Treecreeper : eurtre1
+Common Raven : comrav
+Eurasian Jackdaw : eurjac
+Wood Warbler : woowar
+White-throated Dipper : whtdip1
+Fieldfare : fieldf
+Yellowhammer : yellow2
+European Turtle-Dove : eutdov
+Short-toed Treecreeper : shttre1
