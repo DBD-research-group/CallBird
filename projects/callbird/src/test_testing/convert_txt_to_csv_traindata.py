@@ -30,8 +30,8 @@ def convert_txt_to_csv(directory, target_directory="csv_test"):
                     print(f"Warning: {file} does not have exactly 2 lines, skipping.")
                     continue
                 
-                header_line = lines[0].replace('\t', ';').replace('\n', '')
-                data_line = lines[1].replace('\t', ';').replace('\n', '')
+                header_line = lines[0].replace('\t', ';').replace('\n', '') + ";actual_filename"
+                data_line = lines[1].replace('\t', ';').replace('\n', '') + ";" + file.replace('.txt', '')
                 species = data_line.split(';')[6]
 
                 if species not in testSpeciesToEbirdCodeDict:
