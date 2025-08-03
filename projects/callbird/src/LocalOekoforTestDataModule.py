@@ -19,7 +19,7 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
 
         dataset = load_dataset(
             "csv",
-            data_files = "/workspace/oekofor/testset/labels/*_2020*.csv",
+            data_files = "/workspace/oekofor/testset/labels/*.csv",
             features = Features({ # TODO: Add all features available in BirdSet
                 "tsn_code": Value("string"),
                 "ebird_code": Value("string"),
