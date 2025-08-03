@@ -37,7 +37,7 @@ trainer:
   max_epochs: 30
 
 datamodule:
-  _target_: projects.callbird.src.LocalOekoforTestDataModule.LocalOekoforTestDataModule
+  _target_: projects.callbird.src.LocalOekoforTrainDataModule.LocalOekoforTrainDataModule
   dataset:
     hf_path: mai-leh/loading-testing
     hf_name: OEKOFOR_TEST
