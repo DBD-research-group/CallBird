@@ -11,7 +11,7 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
 
     @property
     def num_classes(self):
-        return 57
+        return 56
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
         # A list of eBird codes not present in the train set.
