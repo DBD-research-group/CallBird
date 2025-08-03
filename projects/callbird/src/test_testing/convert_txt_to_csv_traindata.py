@@ -1,7 +1,7 @@
 import os
 
 def convert_txt_to_csv(directory, target_directory="csv_test"):
-    testSpeciesToEbirdCodeDict = {}
+    testSpeciesToEbirdCodeDict = {"no bird": "null"}
 
     with open(os.path.join(directory, "/workspace/projects/speciesEbirdCodeListFlat.txt"), 'r') as speciesToEbirdFile:
         for line in speciesToEbirdFile:
