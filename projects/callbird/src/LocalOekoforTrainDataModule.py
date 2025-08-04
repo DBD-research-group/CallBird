@@ -1,3 +1,4 @@
+from callbird.src.readUtils import readCommentedList, readLabeledMapping
 from birdset.datamodule import BirdSetDataModule
 from datasets import load_dataset, DatasetDict, IterableDataset, IterableDatasetDict, Audio, Features, Value, Dataset
 
@@ -14,11 +15,14 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
         return 107
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
+        blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_naive.txt")
+
         dataset = load_dataset(
             "csv",
             data_files = "/workspace/oekofor/trainset/csvlabels/*.csv",
             features = Features({ # TODO: Add all features available in BirdSet
                 "ebird_code": Value("string"),
+                "call_type": Value("string"),
                 "start_sample [s]": Value("float"),
                 "end_sample [s]": Value("float"),
                 "actual_filename": Value("string"),
@@ -30,7 +34,19 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
         )
 
         # We need to remove None values from the 'ebird_code' column since the pipeline cannot handle them
-        dataset = dataset.map(lambda x: {"ebird_code": x["ebird_code"] if x["ebird_code"] is not None else "NA"}) # TODO: Check if NA is an existing code
+        dataset = dataset.map(lambda x: {"ebird_code": x["ebird_code"] if x["ebird_code"] is not None else "NA"})
+        dataset = dataset.map(lambda x: {"call_type": x["call_type"] if x["call_type"] is not None else "NA"})
+
+        # Load the call type mappings
+        calltype_mapping = readLabeledMapping("/workspace/projects/callbird/datastats/call_types_list", "train")
+        dataset = dataset.map(lambda x: {"short_call_type": calltype_mapping.get(x["call_type"], None)}) # Using None to force an error if the call type is not found
+
+        # Create naive classes
+        dataset = dataset.map(lambda x: { "ebird_code_and_call": f"{x['ebird_code']}_{x['short_call_type']}" })
+
+        # Filter out entries with eBird codes in the blacklist
+        dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
+
 
         dataset = dataset.rename_column("start_sample [s]", "start_time")
         dataset = dataset.rename_column("end_sample [s]", "end_time")
