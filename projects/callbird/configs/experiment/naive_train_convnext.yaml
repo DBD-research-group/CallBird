@@ -13,7 +13,7 @@ defaults:
 tags: []
 seed: 1
 train: False
-test: False
+test: True
 
 logger:
   wandb:
