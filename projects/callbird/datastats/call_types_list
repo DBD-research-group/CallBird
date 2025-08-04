@@ -1,0 +1,43 @@
+@map
+Flight : fl
+Contact : ct
+Song : sn
+Song 2 : st
+Drumming : dr
+Exitment : ex
+Alert : al
+Alert ground : ag
+Alert air : ai
+Other : or
+
+@train
+f (Flugruf) : fl
+c (Kontaktruf) : ct
+s (Gesang) : sn
+t (Trommeln) : dr
+b (Bettelruf) : or
+e (Erregungsruf) : ex
+ic (Interaktionsrufe) : or
+ac (Alarmruf) : al
+s2 (Zweitgesang) : st
+wb (Fluegelschlag) : or
+nfc (Nachtzugruf) : or
+rs (Rufe am Schlafplatz) : or
+ac_b (Alarmruf_Bodenfeinde) : ag
+ac_f (Alarmruf Luftfeinde) : ai
+NA : or
+
+@test
+song : sn
+contact call : ct
+flight call : fl
+something : or
+drumming : dr
+alarm call : al
+vocal : or
+ground alarm call : ag
+call : or
+whistle : or
+air alarm call : ai
+excitement call : ex
+sub song : st
