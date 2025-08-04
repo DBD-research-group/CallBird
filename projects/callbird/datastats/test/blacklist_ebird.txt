@@ -1,0 +1,5 @@
+# eBird codes not present in the train set
+brambl
+redwin
+norgos1
+redjun
