@@ -16,8 +16,12 @@ dataset = load_dataset(
     features=Features(
         {
             "ebird_code": Value("string"),
+            "call_type": Value("string"),
         }
     )
 )
 
-print(len(dataset["train"].unique("ebird_code")))
+print(len(dataset["train"].unique("call_type")))
+
+# list all call_type
+print(dataset["train"].unique("call_type"))
