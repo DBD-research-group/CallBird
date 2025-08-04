@@ -1,3 +1,15 @@
+def readCommentedList(file_path: str):
+    """
+    Reads a list of items from a file, ignoring comments and empty lines.
+    Args:
+        file_path (str): Path to the file containing the list.
+    Returns:
+        list: A list of items read from the file.
+    """
+    with open(file_path, "r") as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+    return []
+
 def readLabeledMapping(file_path: str, label: str | None):
     """
     Reads a labeled mapping from a file (including unlabeled data).

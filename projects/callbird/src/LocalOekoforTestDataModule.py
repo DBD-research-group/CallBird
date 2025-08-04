@@ -1,3 +1,4 @@
+from callbird.src.readUtils import readCommentedList, readLabeledMapping
 from birdset.datamodule import BirdSetDataModule
 from datasets import load_dataset, DatasetDict, IterableDataset, IterableDatasetDict, Audio, Features, Value, Dataset
 
@@ -14,8 +15,9 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
         return 56
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
-        # A list of eBird codes not present in the train set.
-        blacklist = ['redjun', 'redwin', 'brambl', 'norgos1']
+        # A list of classes not present in the train set.
+        # blacklist_ebird = readCommentedList("/workspace/projects/callbird/test/blacklist_ebird.txt")
+        blacklist_naive = readCommentedList("/workspace/projects/callbird/test/blacklist_naive.txt")
 
         dataset = load_dataset(
             "csv",
@@ -23,6 +25,7 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
             features = Features({ # TODO: Add all features available in BirdSet
                 "tsn_code": Value("string"),
                 "ebird_code": Value("string"),
+                "vocalization_type": Value("string"),
                 "start_time": Value("float"),
                 "end_time": Value("float"),
                 "audio_filename": Value("string"),
@@ -32,11 +35,21 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
             trust_remote_code = True, # While not needed for local datasets, it is kept for consistency
         )
 
-        # Filter out entries with eBird codes in the blacklist
-        dataset = dataset.filter(lambda x: x["ebird_code"] not in blacklist)
-
         # We need to remove None values from the 'ebird_code' column since the pipeline cannot handle them
         dataset = dataset.map(lambda x: {"ebird_code": x["ebird_code"] if x["ebird_code"] is not None else "NA"}) # TODO: Check if NA is an existing code
+        dataset = dataset.map(lambda x: {"vocalization_type": x["vocalization_type"] if x["vocalization_type"] is not None else "NA"}) # TODO: Check if NA is an existing code
+
+        # Load the call type mappings
+        calltype_mapping = readLabeledMapping("/workspace/projects/callbird/datastats/call_types_list", "test")
+        dataset = dataset.map(lambda x: {"short_call_type": calltype_mapping.get(x["vocalization_type"], None)}) # Using None to force an error if the vocalization type is not found
+
+        # Create naive classes
+        dataset = dataset.map(lambda x: {"ebird_code_and_call": f"{x['ebird_code']}_{x['short_call_type']}"})
+
+        # Filter out entries with eBird codes in the blacklist
+        dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
+
+
 
         # Rename 'audio_filename' to 'filepath' to match what the base class expects
         dataset = dataset.rename_column("audio_filename", "filepath")
