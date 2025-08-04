@@ -16,8 +16,8 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
         # A list of classes not present in the train set.
-        # blacklist_ebird = readCommentedList("/workspace/projects/callbird/test/blacklist_ebird.txt")
-        blacklist_naive = readCommentedList("/workspace/projects/callbird/test/blacklist_naive.txt")
+        # blacklist_ebird = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_ebird.txt")
+        blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_naive.txt")
 
         dataset = load_dataset(
             "csv",
