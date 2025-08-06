@@ -52,6 +52,10 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
         dataset = dataset.rename_column("end_sample [s]", "end_time")
         dataset = dataset.rename_column("actual_filename", "filepath")
 
+        files_blacklist = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_files.txt")
+        # Filter out entries with file paths in the blacklist
+        dataset = dataset.filter(lambda x: x["filepath"] not in files_blacklist)
+
         # Setting absolute paths for the audio files
         def update_filepath(example):
             example["filepath"] = f"/workspace/oekofor/dataset/{example['filepath']}.flac"
@@ -114,4 +118,8 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
                 decode=decode,
             ),
         )
+
+        print(f"Classes: {dataset.unique('ebird_code_multilabel')}")
+        print(f"Classes raw: {dataset.unique('ebird_code')}")
+
         return dataset

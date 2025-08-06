@@ -12,8 +12,8 @@ defaults:
 
 tags: []
 seed: 1
-train: False
-test: True
+train: True
+test: False
 
 logger:
   wandb:
