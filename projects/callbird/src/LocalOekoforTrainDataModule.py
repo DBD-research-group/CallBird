@@ -1,6 +1,7 @@
 from callbird.src.readUtils import readCommentedList, readLabeledMapping
 from birdset.datamodule import BirdSetDataModule
 from datasets import load_dataset, DatasetDict, IterableDataset, IterableDatasetDict, Audio, Features, Value, Dataset
+from os import path
 
 class LocalOekoforTrainDataModule(BirdSetDataModule):
     """
@@ -12,7 +13,7 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
 
     @property
     def num_classes(self):
-        return 107
+        return 200
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
         blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_naive.txt")
@@ -59,9 +60,15 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
         # Setting absolute paths for the audio files
         def update_filepath(example):
             example["filepath"] = f"/workspace/oekofor/dataset/{example['filepath']}.flac"
+
+            # if not path.exists(example["filepath"]):
+            #     example["filepath"] = example["filepath"].replace(".flac", ".wav")
+
             return example
 
         dataset = dataset.map(update_filepath)
+
+        dataset = dataset.filter(lambda x: path.exists(x["filepath"]))
 
         def add_event_columns(example):
             example["detected_events"] = (example["start_time"], example["end_time"])

@@ -1,3 +1,4 @@
+from os import path
 from callbird.src.readUtils import readCommentedList, readLabeledMapping
 from birdset.datamodule import BirdSetDataModule
 from datasets import load_dataset, DatasetDict, IterableDataset, IterableDatasetDict, Audio, Features, Value, Dataset
@@ -12,7 +13,7 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
 
     @property
     def num_classes(self):
-        return 107
+        return 134
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
         # A list of classes not present in the train set.
@@ -57,6 +58,10 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
         # Setting absolute paths for the audio files
         def update_filepath(example):
             example["filepath"] = f"/workspace/oekofor/testset/audio_files/{example['filepath']}.flac"
+
+            # if not path.exists(example["filepath"]):
+            #     example["filepath"] = example["filepath"].replace(".flac", ".wav")
+
             return example
 
         dataset = dataset.map(update_filepath)
