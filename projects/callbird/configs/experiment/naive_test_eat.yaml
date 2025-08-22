@@ -48,6 +48,7 @@ datamodule:
     classlimit: null
     eventlimit: null
     direct_fingerprint: null
+    n_workers: 1
   transforms:
     preprocessing:
         normalize_waveform: instance_normalization

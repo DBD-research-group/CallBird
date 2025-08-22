@@ -3,6 +3,66 @@ from callbird.src.readUtils import readCommentedList, readLabeledMapping
 from birdset.datamodule import BirdSetDataModule
 from datasets import load_dataset, DatasetDict, IterableDataset, IterableDatasetDict, Audio, Features, Value, Dataset
 
+from birdset.configs.module_configs import LRSchedulerConfig
+from birdset.configs.module_configs import LoggingParamsConfig
+from birdset.configs.module_configs import MultilabelMetricsConfig
+from birdset.modules.metrics.multilabel import TopKAccuracy
+from birdset.modules.metrics.multilabel import cmAP
+from birdset.modules.metrics.multilabel import cmAP5
+from birdset.modules.metrics.multilabel import mAP
+from birdset.modules.metrics.multilabel import pcmAP
+from birdset.modules.models.convnext import ConvNextClassifier
+from collections import OrderedDict
+from collections import defaultdict
+from functools import partial
+from omegaconf import AnyNode
+from omegaconf.base import ContainerMetadata
+from omegaconf import DictConfig
+from omegaconf.base import Metadata
+from torch import FloatStorage
+from torch import LongStorage
+from torch import device
+# from torch import float32
+from torch._C import _VariableFunctionsClass
+from torch._C._nn import gelu
+from torch._utils import _rebuild_parameter
+from torch._utils import _rebuild_tensor_v2
+from torch.nn.modules.container import ModuleList
+from torch.nn.modules.container import Sequential
+from torch.nn.modules.conv import Conv2d
+from torch.nn.modules.linear import Identity
+from torch.nn.modules.linear import Linear
+from torch.nn.modules.loss import BCEWithLogitsLoss
+from torch.nn.modules.normalization import LayerNorm
+from torch.optim.adamw import AdamW
+from torchmetrics.aggregation import MaxMetric
+from torchmetrics.classification.auroc import MultilabelAUROC
+from torchmetrics.classification.average_precision import MultilabelAveragePrecision
+from torchmetrics.collections import MetricCollection
+from torchmetrics.metric import jit_distributed_available
+from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.data import dim_zero_max
+from torchmetrics.utilities.data import dim_zero_sum
+from transformers.activations import GELUActivation
+from transformers.models.convnext.configuration_convnext import ConvNextConfig
+from transformers.models.convnext.modeling_convnext import ConvNextEmbeddings
+from transformers.models.convnext.modeling_convnext import ConvNextEncoder
+from transformers.models.convnext.modeling_convnext import ConvNextForImageClassification
+from transformers.models.convnext.modeling_convnext import ConvNextLayer
+from transformers.models.convnext.modeling_convnext import ConvNextLayerNorm
+from transformers.models.convnext.modeling_convnext import ConvNextModel
+from transformers.models.convnext.modeling_convnext import ConvNextStage
+from typing import Any
+import torch
+
+# Add DictConfig to the list of trusted types for torch.load
+torch.serialization.add_safe_globals([getattr, dict, defaultdict, AdamW, Any, AnyNode, BCEWithLogitsLoss, ContainerMetadata, Conv2d, ConvNextClassifier, ConvNextConfig, ConvNextEmbeddings, ConvNextEncoder, ConvNextForImageClassification, ConvNextLayer, ConvNextLayerNorm, ConvNextModel, ConvNextStage, DictConfig, FloatStorage, GELUActivation, Identity, LRSchedulerConfig, LayerNorm, Linear, LoggingParamsConfig, LongStorage, MaxMetric, Metadata, MetricCollection, ModuleList, MultilabelAUROC, MultilabelAveragePrecision, MultilabelMetricsConfig, OrderedDict, Sequential, TopKAccuracy,
+                                      _VariableFunctionsClass,
+                                      _rebuild_parameter, _rebuild_tensor_v2,
+                                      cmAP, cmAP5, defaultdict, device, dim_zero_cat, dim_zero_max, dim_zero_sum,
+                                      gelu,
+                                      jit_distributed_available, mAP, partial, pcmAP])
+
 class LocalOekoforTestDataModule(BirdSetDataModule):
     """
     A class to handle the test dataset for Oekofor.
@@ -59,8 +119,8 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
         def update_filepath(example):
             example["filepath"] = f"/workspace/oekofor/testset/audio_files/{example['filepath']}.flac"
 
-            # if not path.exists(example["filepath"]):
-            #     example["filepath"] = example["filepath"].replace(".flac", ".wav")
+            if not path.exists(example["filepath"]):
+                example["filepath"] = example["filepath"].replace(".flac", ".wav")
 
             return example
 

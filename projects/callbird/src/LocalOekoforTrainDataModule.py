@@ -46,7 +46,8 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
         dataset = dataset.map(lambda x: { "ebird_code_and_call": f"{x['ebird_code']}_{x['short_call_type']}" })
 
         # Filter out entries with eBird codes in the blacklist
-        dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
+        # We dont filter this now, to include all possible classes
+        # dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
 
 
         dataset = dataset.rename_column("start_sample [s]", "start_time")
@@ -61,8 +62,8 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
         def update_filepath(example):
             example["filepath"] = f"/workspace/oekofor/dataset/{example['filepath']}.flac"
 
-            # if not path.exists(example["filepath"]):
-            #     example["filepath"] = example["filepath"].replace(".flac", ".wav")
+            if not path.exists(example["filepath"]):
+                example["filepath"] = example["filepath"].replace(".flac", ".wav")
 
             return example
 

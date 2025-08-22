@@ -46,6 +46,7 @@ datamodule:
     class_weights_sampler: null
     classlimit: null
     eventlimit: null
+    n_workers: 1
   transforms:
     preprocessing:
       spectrogram_conversion:

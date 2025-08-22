@@ -12,8 +12,9 @@ defaults:
 
 tags: []
 seed: 1
-train: False
+ckpt_path: /workspace/logs/train/runs/OEKOFOR_TEST/convnext/2025-08-20_234045/callback_checkpoints/convnext_OEKOFOR_TEST_29.ckpt
 test: True
+train: False
 
 logger:
   wandb:
@@ -30,11 +31,14 @@ module:
   network:
     torch_compile: False
     model:
+      num_classes: 200
+      local_checkpoint: ${ckpt_path}
       pretrain_info: null
 
 trainer:
   min_epochs: 1
   max_epochs: 30
+  devices: [2]
 
 datamodule:
   _target_: projects.callbird.src.LocalOekoforTestDataModule.LocalOekoforTestDataModule
@@ -46,6 +50,7 @@ datamodule:
     class_weights_sampler: null
     classlimit: null
     eventlimit: null
+    n_workers: 1
   transforms:
     preprocessing:
       spectrogram_conversion:
@@ -68,6 +73,4 @@ datamodule:
   mapper: null
 
 callbacks:
-  model_checkpoint:
-    save_last: True
-    every_n_epochs: 5
+  model_checkpoint: null
