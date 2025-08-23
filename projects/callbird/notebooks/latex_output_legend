@@ -1,0 +1,16 @@
+\begin{longtable}{|l|l|}
+\hline
+Name & Abbreviation \\
+\hline
+Flight & fl \\
+Contact & ct \\
+Song & sn \\
+Song 2 & st \\
+Drumming & dr \\
+Exitment & ex \\
+Alert & al \\
+Other & or \\
+\hline
+\caption{Call types and their abbreviation}
+\label{tab:callbird_legend}
+\end{longtable}

@@ -97,7 +97,7 @@ class LocalOekoforTestDataModule(BirdSetDataModule):
         )
 
         # We need to remove None values from the 'ebird_code' column since the pipeline cannot handle them
-        dataset = dataset.map(lambda x: {"ebird_code": x["ebird_code"] if x["ebird_code"] is not None else "NA"}) # TODO: Check if NA is an existing code
+        dataset = dataset.map(lambda x: {"ebird_code": x["ebird_code"] if x["ebird_code"] is not None else ("UNKNOWN" if x["common_name"] == "Bird" else "NA")}) # TODO: Check if NA is an existing code
         dataset = dataset.map(lambda x: {"vocalization_type": x["vocalization_type"] if x["vocalization_type"] is not None else "NA"}) # TODO: Check if NA is an existing code
 
         # Load the call type mappings

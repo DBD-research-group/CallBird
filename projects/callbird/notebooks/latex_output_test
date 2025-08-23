@@ -1,0 +1,69 @@
+\begin{longtable}{|l|c|c|c|c|c|c|c|c|}
+\hline
+Common Name & \hyperref[tab:callbird_legend]{al} & \hyperref[tab:callbird_legend]{ct} & \hyperref[tab:callbird_legend]{dr} & \hyperref[tab:callbird_legend]{ex} & \hyperref[tab:callbird_legend]{fl} & \hyperref[tab:callbird_legend]{sn} & \hyperref[tab:callbird_legend]{st} & \hyperref[tab:callbird_legend]{or} \\
+\hline
+Eurasian Wren & 1 & 16 & - & - & - & 445 & - & - \\
+Common Chaffinch & 1 & 628 & - & - & 46 & 1200 & 31 & - \\
+Great Tit & 1 & 133 & - & - & - & 370 & - & - \\
+Mistle Thrush & - & - & - & - & 10 & 395 & - & - \\
+Hawfinch & - & 55 & - & - & 25 & - & - & 1 \\
+Coal Tit & - & 8 & - & - & - & 288 & - & 5 \\
+European Robin & - & 222 & - & - & - & 1379 & - & 3 \\
+Eurasian Blue Tit & - & 354 & - & - & 1 & 208 & - & 3 \\
+Great Spotted Woodpecker & - & 69 & 77 & - & - & - & - & 1 \\
+Goldcrest & - & 138 & - & - & - & 155 & - & 2 \\
+Yellowhammer & - & 159 & - & - & - & 38 & - & 1 \\
+Short-toed Treecreeper & - & 17 & - & - & - & 42 & - & 2 \\
+Brambling & - & 14 & - & - & 5 & 32 & - & - \\
+European Goldfinch & - & - & - & - & 1 & - & - & - \\
+Eurasian Nuthatch & - & 142 & - & - & - & 87 & - & - \\
+Bird & 151 & 151 & - & - & 1 & 16 & - & 622 \\
+Dunnock & - & - & - & - & 2 & 95 & - & 1 \\
+Song Thrush & 20 & 1 & - & - & 59 & 1514 & - & 2 \\
+Northern Lapwing & - & - & - & - & - & - & - & 2 \\
+Eurasian Blackbird & 490 & 5 & - & - & 1 & 2163 & - & - \\
+Marsh Tit & - & 170 & - & - & - & 34 & 1 & - \\
+Willow Warbler & - & - & - & - & - & 133 & - & - \\
+Common Wood-Pigeon & - & - & 3 & - & - & 57 & - & - \\
+European Roe Deer & 12 & - & - & - & - & - & - & 2 \\
+Eurasian Jay & - & 30 & - & - & - & - & - & - \\
+Common Chiffchaff & 1 & 155 & - & - & - & 751 & - & - \\
+Crested Tit & - & 100 & - & - & - & - & - & - \\
+Eurasian Green Woodpecker & - & - & - & - & - & 19 & - & - \\
+Common Firecrest & - & 6 & - & - & - & 361 & 3 & - \\
+Stock Dove & - & - & - & - & 1 & 3 & - & - \\
+European Starling & - & - & - & - & - & 47 & - & 1 \\
+Tawny Owl & - & - & - & - & - & 52 & - & 1 \\
+Eurasian Blackcap & 19 & 176 & - & - & - & 856 & - & - \\
+European Greenfinch & - & - & - & - & 4 & 6 & - & - \\
+Spotted Flycatcher & - & 142 & - & - & - & - & - & - \\
+Gray-headed Woodpecker & - & - & 5 & - & - & 4 & - & - \\
+Wood Warbler & - & - & - & - & - & 6 & - & 1 \\
+Common Cuckoo & - & - & - & - & - & 79 & - & - \\
+Eurasian Treecreeper & - & 46 & - & - & - & 16 & - & - \\
+European Pied Flycatcher & - & - & - & - & - & 11 & - & - \\
+Middle Spotted Woodpecker & - & - & - & - & - & 2 & - & - \\
+Black Woodpecker & - & 28 & - & 2 & 7 & 1 & - & - \\
+European Turtle-Dove & - & - & - & - & - & - & - & 4 \\
+Eurasian Jackdaw & - & - & - & - & 1 & - & - & - \\
+Willow Tit & - & - & - & - & - & 20 & - & 1 \\
+White-throated Dipper & - & - & - & - & 7 & - & - & - \\
+Eurasian Bullfinch & - & - & - & - & 157 & - & - & 3 \\
+Red Crossbill & - & - & - & 39 & 48 & 64 & - & - \\
+Eurasian Siskin & - & 5 & - & - & 29 & 3 & 6 & - \\
+Redwing & 4 & - & - & - & 2 & 8 & - & - \\
+Fieldfare & - & - & - & - & 2 & - & - & - \\
+Carrion Crow & - & 13 & - & - & - & - & - & - \\
+Eurasian Skylark & - & - & - & - & - & 7 & - & - \\
+Eurasian Goshawk & - & - & - & - & - & 4 & - & - \\
+Greater Whitethroat & - & - & - & - & - & 7 & - & - \\
+Common Nightingale & - & - & - & - & - & 1 & - & - \\
+Common Raven & - & 23 & - & - & 1 & - & - & - \\
+Red Junglefowl & - & - & - & - & - & 1 & - & - \\
+Garden Warbler & - & - & - & - & - & 24 & - & - \\
+Tree Pipit & - & - & - & - & 1 & 66 & - & - \\
+Eurasian Woodcock & - & - & - & - & - & 8 & - & - \\
+\hline
+\caption{Number of samples for each bird and call type}
+\label{tab:callbird_longtabletest}
+\end{longtable}

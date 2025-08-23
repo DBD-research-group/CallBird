@@ -6,8 +6,8 @@ Song 2 : st
 Drumming : dr
 Exitment : ex
 Alert : al
-Alert ground : ag
-Alert air : ai
+# Alert ground : ag
+# Alert air : ai
 Other : or
 
 @train
@@ -23,8 +23,10 @@ s2 (Zweitgesang) : st
 wb (Fluegelschlag) : or
 nfc (Nachtzugruf) : or
 rs (Rufe am Schlafplatz) : or
-ac_b (Alarmruf_Bodenfeinde) : ag
-ac_f (Alarmruf Luftfeinde) : ai
+# ac_b (Alarmruf_Bodenfeinde) : ag
+ac_b (Alarmruf_Bodenfeinde) : al
+# ac_f (Alarmruf Luftfeinde) : ai
+ac_f (Alarmruf Luftfeinde) : al
 NA : or
 
 @test
@@ -35,9 +37,11 @@ something : or
 drumming : dr
 alarm call : al
 vocal : or
-ground alarm call : ag
+# ground alarm call : ag
+ground alarm call : al
 call : or
 whistle : or
-air alarm call : ai
+# air alarm call : ai
+air alarm call : al
 excitement call : ex
 sub song : st

@@ -35,6 +35,7 @@ module:
 trainer:
   min_epochs: 1
   max_epochs: 30
+  devices: [2]
 
 datamodule:
   _target_: projects.callbird.src.LocalOekoforTrainDataModule.LocalOekoforTrainDataModule
