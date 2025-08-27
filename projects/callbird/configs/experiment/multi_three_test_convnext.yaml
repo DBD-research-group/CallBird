@@ -19,8 +19,8 @@ ckpt_path: /workspace/logs/train/runs/OEKOFOR_TEST/convnext/2025-08-26_230706/ca
 logger:
   wandb:
     tags: ${tags}
-    group: "OEKOFOR_TEST_convnext_multi"
-    mode: offline
+    group: "oekofor_multi_three_convnext"
+    mode: online
     version: calltype_multi_three_convnext_${start_time} 
 
 module:
@@ -62,6 +62,8 @@ datamodule:
     n_workers: 1
   transforms:
     target_columns: ["labels_ebird", "labels_calltype"]
+    waveform_augmentations: null
+    spectrogram_augmentations: null
     preprocessing:
       spectrogram_conversion:
         n_fft: 2048
@@ -72,13 +74,13 @@ datamodule:
         n_stft: 1025
   loaders:
     train:
-      batch_size: 16
+      batch_size: 32
       num_workers: 1
     valid:
-      batch_size: 128
+      batch_size: 32
       num_workers: 1
     test:
-      batch_size: 128
+      batch_size: 32
       num_workers: 1
   mapper: null
 

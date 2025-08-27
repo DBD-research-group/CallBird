@@ -18,8 +18,8 @@ test: False
 logger:
   wandb:
     tags: ${tags}
-    group: "OEKOFOR_TEST_convnext_multi"
-    mode: offline
+    group: "oekofor_multi_three_convnext"
+    mode: online
     version: calltype_multi_three_convnext_${start_time} 
 
 module:
@@ -59,6 +59,8 @@ datamodule:
     eventlimit: null
     n_workers: 1
   transforms:
+    waveform_augmentations: null
+    spectrogram_augmentations: null
     target_columns: ["labels_ebird", "labels_calltype"]
     preprocessing:
       spectrogram_conversion:
@@ -70,13 +72,13 @@ datamodule:
         n_stft: 1025
   loaders:
     train:
-      batch_size: 16
+      batch_size: 32
       num_workers: 1
     valid:
-      batch_size: 128
+      batch_size: 32
       num_workers: 1
     test:
-      batch_size: 128
+      batch_size: 32
       num_workers: 1
   mapper: null
 
