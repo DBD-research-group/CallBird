@@ -12,8 +12,16 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
     """
 
     @property
+    def num_classes_ebird(self):
+        return len(self.ebird_labels)
+
+    @property
+    def num_classes_calltype(self):
+        return len(self.calltype_labels)
+
+    @property
     def num_classes(self):
-        return 200
+        return 56
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
         blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_naive.txt")
@@ -93,21 +101,35 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
         assert isinstance(dataset, DatasetDict | Dataset)
         dataset = self._ensure_train_test_splits(dataset)
         def add_multilabel_column(example):
-            example["ebird_code"] = example["ebird_code_and_call"] # TODO: Check if this is correct / needed
-            example["ebird_code_multilabel"] = example["ebird_code_and_call"] # TODO: Check if this is correct / needed
+            example["ebird_code_multilabel"] = example["ebird_code"]
+            example["call_type_multilabel"] = example["short_call_type"]
+
             return example
         
         dataset = dataset.map(add_multilabel_column)
 
-        labels = set()
+        ebird_labels = set()
+        calltype_labels = set()
+
         for split in dataset.keys():
-            labels.update(dataset[split]["ebird_code_multilabel"])
-        labels = sorted(labels)  # Sort to ensure consistent ordering
-        label_to_id = {lbl: i for i, lbl in enumerate(labels)}
+            ebird_labels.update(dataset[split]["ebird_code"])
+            calltype_labels.update(dataset[split]["short_call_type"])
+
+        self.ebird_labels = sorted(list(ebird_labels))
+        self.calltype_labels = sorted(list(calltype_labels))
+
+        ebird_label_to_id = {lbl: i for i, lbl in enumerate(self.ebird_labels)}
+        calltype_label_to_id = {lbl: i for i, lbl in enumerate(self.calltype_labels)}
 
         def label_to_id_fn(batch):
             for i in range(len(batch["ebird_code_multilabel"])):
-                batch["ebird_code_multilabel"][i] = label_to_id[batch["ebird_code_multilabel"][i]]
+                batch["ebird_code_multilabel"][i] = ebird_label_to_id[batch["ebird_code_multilabel"][i]]
+
+            for i in range(len(batch["call_type_multilabel"])):
+                batch["call_type_multilabel"][i] = calltype_label_to_id[batch["call_type_multilabel"][i]]
+
+            ## batch["ebird_code_multilabel"] = [ebird_label_to_id[label] for label in batch["ebird_code_multilabel"]]
+            ## batch["call_type_multilabel"] = [calltype_label_to_id[label] for label in batch["call_type_multilabel"]]
             return batch
 
         dataset = dataset.map(
@@ -133,7 +155,64 @@ class LocalOekoforTrainDataModule(BirdSetDataModule):
             ),
         )
 
-        print(f"Classes: {dataset.unique('ebird_code_multilabel')}")
-        print(f"Classes raw: {dataset.unique('ebird_code')}")
+        # print(f"Classes: {dataset.unique('ebird_code_multilabel')}")
+        # print(f"Classes raw: {dataset.unique('ebird_code')}")
+
+        return dataset
+
+    def _preprocess_data(self, dataset):
+        if self.dataset_config.task == "multilabel":
+             # pick only train and test_5s dataset
+            dataset = DatasetDict(
+                {split: dataset[split] for split in ["train", "test_5s"]}
+            )
+
+            print(">> Mapping train data.")
+            dataset["train"] = dataset["train"].map(
+                self.event_mapper,
+                remove_columns=["audio"],
+                batched=True,
+                batch_size=300,
+                num_proc=self.dataset_config.n_workers,
+                desc="Train event mapping",
+            )
+
+            print(">> One-hot-encode classes")
+            for split in ["train", "test_5s"]:
+                dataset[split] = dataset[split].map(
+                    self._classes_one_hot,
+                    fn_kwargs={
+                        "label_column_name": "ebird_code_multilabel",
+                        "num_classes": self.num_classes_ebird
+                    },
+                    batched=True,
+                    batch_size=300,
+                    num_proc=self.dataset_config.n_workers,
+                    desc=f"One-hot-encoding ebird labels for {split}.",
+                )
+                dataset[split] = dataset[split].map(
+                    self._classes_one_hot,
+                    fn_kwargs={
+                        "label_column_name": "call_type_multilabel",
+                        "num_classes": self.num_classes_calltype
+                    },
+                    batched=True,
+                    batch_size=300,
+                    num_proc=self.dataset_config.n_workers,
+                    desc=f"One-hot-encoding calltype labels for {split}.",
+                )
+
+            dataset = dataset.rename_column("ebird_code_multilabel", "labels_ebird")
+            dataset = dataset.rename_column("call_type_multilabel", "labels_calltype")
+
+            dataset_test = dataset.pop("test_5s")
+            dataset["test"] = dataset_test
+        else:
+            raise f"{self.dataset_config.task=} is not supported, choose (multilabel, multiclass)"
+
+        for split in ["train", "test"]:
+            dataset[split] = dataset[split].select_columns(
+                ["filepath", "labels_ebird", "labels_calltype", "detected_events", "start_time", "end_time"]
+            )
 
         return dataset

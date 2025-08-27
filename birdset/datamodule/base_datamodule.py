@@ -49,7 +49,7 @@ class BaseDataModuleHF(L.LightningDataModule):
         self,
         dataset: DatasetConfig = DatasetConfig(),
         loaders: LoadersConfig = LoadersConfig(),
-        transforms: BirdSetTransformsWrapper = BirdSetTransformsWrapper(),
+        transforms: BirdSetTransformsWrapper = BirdSetTransformsWrapper(["labels"]),
     ):
         super().__init__()
         self.dataset_config = dataset
@@ -73,6 +73,8 @@ class BaseDataModuleHF(L.LightningDataModule):
 
     @property
     def num_classes(self):
+        raise ValueError("This should not be called")
+
         return len(
             datasets.load_dataset_builder(
                 self.dataset_config.hf_path, self.dataset_config.hf_name
@@ -328,7 +330,7 @@ class BaseDataModuleHF(L.LightningDataModule):
             split == "train"
         ):  # we need this for sampler, cannot be done later because set_transform
             if self.dataset_config.class_weights_sampler:
-                self.train_label_list = dataset["labels"]
+                self.train_label_list = dataset["labels_ebird"]
 
         # add run-time transforms to dataset
         dataset.set_transform(transforms, output_all_columns=False)
@@ -460,7 +462,7 @@ class BaseDataModuleHF(L.LightningDataModule):
         dataset = dataset.remove_columns("id")
         return dataset.select(limited_indices)
 
-    def _classes_one_hot(self, batch):
+    def _classes_one_hot(self, batch, label_column_name: str, num_classes: int):
         """
         Converts class labels to one-hot encoding.
 
@@ -472,17 +474,21 @@ class BaseDataModuleHF(L.LightningDataModule):
 
         Returns:
             dict: The batch with the "labels" field converted to one-hot encoding. The keys are the field names and the values are the field data.
+            label_column_name (str): The name of the column in the batch that contains the labels.
+                                     These labels are expected to be lists of integers (class indices).
+            num_classes (int): The total number of unique classes for this task. This determines
+                               the width of the one-hot encoded matrix.
         """
-        label_list = [y for y in batch["labels"]]
+        label_list = [y for y in batch[label_column_name]]
         class_one_hot_matrix = torch.zeros(
-            (len(label_list), self.num_classes), dtype=torch.float
+            (len(label_list), num_classes), dtype=torch.float
         )
 
         for class_idx, idx in enumerate(label_list):
             class_one_hot_matrix[class_idx, idx] = 1
 
         class_one_hot_matrix = torch.tensor(class_one_hot_matrix, dtype=torch.float32)
-        return {"labels": class_one_hot_matrix}
+        return {label_column_name: class_one_hot_matrix}
 
     def train_dataloader(self):
         if self.dataset_config.class_weights_sampler:

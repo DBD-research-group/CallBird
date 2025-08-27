@@ -3,7 +3,7 @@
 defaults:
   - override /datamodule: POW.yaml
   - override /module: multilabel.yaml
-  - override /module/network: eat_soundnet.yaml
+  - override /module/network: convnext.yaml
   - override /callbacks: default.yaml
   - override /trainer: single_gpu.yaml
   - override /datamodule/transforms: bird_default_multilabel.yaml
@@ -18,58 +18,66 @@ test: False
 logger:
   wandb:
     tags: ${tags}
-    group: "OEKOFOR_TEST_eat"
+    group: "OEKOFOR_TEST_convnext_multi"
     mode: offline
-    version: calltype_native_eat_${start_time} 
+    version: calltype_multi_three_convnext_${start_time} 
 
 module:
+  _target_: projects.callbird.src.multitask_module.MultiTaskModule
+  metrics_ebird:
+    _target_: birdset.configs.MultilabelMetricsConfig
+    num_labels: 56
+  metrics_calltype:
+    _target_: birdset.configs.MultilabelMetricsConfig
+    num_labels: 8
   optimizer:
-    lr: 3e-4
-    weight_decay: 1e-5
-  loss:
-  #  _target_: birdset.modules.losses.asymmetric_loss.AsymmetricLossMultiLabel
-    _target_: torch.nn.BCEWithLogitsLoss 
-  #_target_: birdset.modules.losses.focal_loss.MultiLabelFocalLoss
+    _target_: torch.optim.AdamW
+    lr: 5e-4
+    weight_decay: 5e-4
   network:
+    num_classes_ebird: 56
+    num_classes_calltype: 8
     torch_compile: False
+    model:
+      _target_: projects.callbird.src.models.ConvNextThreeLayers.ConvNextThreeLayers
+      pretrain_info: null
 
 trainer:
   min_epochs: 1
-  max_epochs: 50
-  devices: [1, 3]
+  max_epochs: 10
+  devices: [2]
 
 datamodule:
   _target_: projects.callbird.src.LocalOekoforTrainDataModule.LocalOekoforTrainDataModule
   dataset:
     hf_path: mai-leh/loading-testing
     hf_name: OEKOFOR_TEST
+    val_split: 0.2
     class_weights_loss: null
     class_weights_sampler: null
     classlimit: null
     eventlimit: null
-    direct_fingerprint: null
     n_workers: 1
   transforms:
+    target_columns: ["labels_ebird", "labels_calltype"]
     preprocessing:
-        normalize_waveform: instance_normalization
+      spectrogram_conversion:
+        n_fft: 2048
+        hop_length: 256
+        power: 2.0
+      melscale_conversion:
+        n_mels: 256
+        n_stft: 1025
   loaders:
     train:
-      batch_size: 128
-      shuffle: True
+      batch_size: 16
       num_workers: 1
-      drop_last: True
-      prefetch_factor: 2
-
     valid:
       batch_size: 128
       num_workers: 1
-      shuffle: False
-    
     test:
-      batch_size: 16
+      batch_size: 128
       num_workers: 1
-      shuffle: False
-
   mapper: null
 
 callbacks:

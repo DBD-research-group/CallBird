@@ -71,7 +71,7 @@ class BaseModule(L.LightningModule):
         ),
         lr_scheduler: Optional[LRSchedulerConfig] = LRSchedulerConfig(),
         metrics: (
-            MulticlassMetricsConfig | MultilabelMetricsConfig
+            MulticlassMetricsConfig | MultilabelMetricsConfig | None
         ) = MulticlassMetricsConfig(),
         logging_params: LoggingParamsConfig = LoggingParamsConfig(),
         num_epochs: int = 50,
@@ -105,16 +105,17 @@ class BaseModule(L.LightningModule):
         self.pretrain_info = pretrain_info
 
         # configure main metric
-        self.train_metric = self.metrics.main_metric.clone()
-        self.valid_metric = self.metrics.main_metric.clone()
-        self.test_metric = self.metrics.main_metric.clone()
-        # configure val_best metric
-        self.valid_metric_best = self.metrics.val_metric_best.clone()
-        # configure additional metrics
-        self.valid_add_metrics = self.metrics.add_metrics.clone(prefix="val/")
-        self.test_add_metrics = self.metrics.add_metrics.clone(prefix="test/")
-        # configure eval_complete metrics
-        self.test_complete_metrics = self.metrics.eval_complete.clone(prefix="test/")
+        if self.metrics:
+            self.train_metric = self.metrics.main_metric.clone()
+            self.valid_metric = self.metrics.main_metric.clone()
+            self.test_metric = self.metrics.main_metric.clone()
+            # configure val_best metric
+            self.valid_metric_best = self.metrics.val_metric_best.clone()
+            # configure additional metrics
+            self.valid_add_metrics = self.metrics.add_metrics.clone(prefix="val/")
+            self.test_add_metrics = self.metrics.add_metrics.clone(prefix="test/")
+            # configure eval_complete metrics
+            self.test_complete_metrics = self.metrics.eval_complete.clone(prefix="test/")
 
         self.torch_compile = network.torch_compile
         self.model_name = network.model_name
@@ -127,6 +128,8 @@ class BaseModule(L.LightningModule):
 
         # TODO: reimplement this
         if self.pretrain_info and self.pretrain_info.get("hf_pretrain_name"):
+            raise ValueError("This should not be called")
+
             print("Masking Logits")
             self.pretrain_dataset = self.pretrain_info["hf_pretrain_name"]
             self.hf_path = self.pretrain_info["hf_path"]

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, List
 from birdset import utils
 
 import numpy as np
@@ -87,12 +87,15 @@ class BaseTransforms:
 
     def __init__(
         self,
-        task: Literal["multiclass", "multilabel"] = "multiclass",
+        target_columns: List[str],
+        task: Literal["multiclass", "multilabel"] = "multilabel",
         sample_rate: int = 32000,
         max_length: int = 5,
         decoding: EventDecoding | None = None,
         feature_extractor: DefaultFeatureExtractor | None = None,
     ) -> None:
+        self.target_columns = target_columns
+
         self.mode = "train"
         self.task = task
         self.sample_rate = sample_rate
@@ -124,11 +127,11 @@ class BaseTransforms:
         """
         batch = self.decode_batch(batch)
 
-        input_values, labels = self.transform_values(batch)
+        input_values, labels_dict = self.transform_values(batch)
 
-        labels = self.transform_labels(labels)
+        labels_dict = self.transform_labels(labels_dict)
 
-        return {"input_values": input_values, "labels": labels}
+        return {"input_values": input_values, **labels_dict}
 
     def decode_batch(self, batch):
         # we overwrite the feature extractor with None because we can do this here manually
@@ -165,16 +168,24 @@ class BaseTransforms:
         # waveform_batch = waveform_batch["input_values"].unsqueeze(1)
         waveform_batch = waveform_batch["input_values"]
 
-        return waveform_batch, batch["labels"]
+        labels_dict = {col: batch[col] for col in self.target_columns}
 
-    def transform_labels(self, labels):
-        if self.task == "multilabel":  # for bcelosswithlogits
-            labels = torch.tensor(labels, dtype=torch.float16)
+        return waveform_batch, labels_dict
 
-        elif self.task == "multiclass":
-            labels = labels
+    def transform_labels(self, labels_dict):
+        transformed_labels = {}
+        for name, labels in labels_dict.items():
+            if self.task == "multilabel":  # for bcelosswithlogits
+                transformed_labels[name] = torch.tensor(labels, dtype=torch.float32)
 
-        return labels
+            elif self.task == "multiclass":
+                transformed_labels[name] = labels
+            
+            else:
+                transformed_labels[name] = labels
+
+
+        return transformed_labels
 
     def set_mode(self, mode):
         self.mode = mode
@@ -222,6 +233,7 @@ class BirdSetTransformsWrapper(BaseTransforms):
 
     def __init__(
         self,
+        target_columns: List[str] = ["labels"],
         task: Literal["multiclass", "multilabel"] = "multilabel",
         sample_rate: int = 32000,
         model_type: Literal["vision", "waveform"] = "vision",
@@ -237,7 +249,7 @@ class BirdSetTransformsWrapper(BaseTransforms):
         nocall_sampler: NoCallMixer | None = None,
         preprocessing: PreprocessingConfig | None = PreprocessingConfig(),
     ):
-        super().__init__(task, sample_rate, max_length, decoding, feature_extractor)
+        super().__init__(target_columns, task, sample_rate, max_length, decoding, feature_extractor)
 
         self.modes_to_skip = ["test", "predict"]
 
@@ -275,18 +287,20 @@ class BirdSetTransformsWrapper(BaseTransforms):
         attention_mask = waveform_batch["attention_mask"]
         input_values = waveform_batch["input_values"]
         input_values = input_values.unsqueeze(1)
-        labels = torch.tensor(batch["labels"])
+        
+        labels_dict = {col: torch.tensor(batch[col]) for col in self.target_columns}
 
         if self.wave_aug:
-            input_values, labels = self._waveform_augmentation(input_values, labels)
+            input_values, labels_dict = self._waveform_augmentation(input_values, labels_dict)
 
         if self.nocall_sampler and self.task == "multilabel":
-            input_values, labels = self.nocall_sampler(input_values, labels)
+            # Note: nocall_sampler might need adjustment for multi-task if it modifies labels
+            input_values, labels_dict = self.nocall_sampler(input_values, labels_dict)
 
         if self.preprocessing is not None:
             input_values = self._preprocess(input_values, attention_mask)
 
-        return input_values, labels
+        return input_values, labels_dict
 
     def _preprocess(
         self, input_values: torch.Tensor, attention_mask: torch.Tensor
@@ -326,13 +340,41 @@ class BirdSetTransformsWrapper(BaseTransforms):
             input_values = spectrograms
         return input_values
 
-    def _waveform_augmentation(self, input_values, labels):
+    def _waveform_augmentation(self, input_values, labels_dict):
         if self.task == "multilabel":
-            labels = labels.unsqueeze(1).unsqueeze(1)
+            label_keys = list(labels_dict.keys())
+
+            # If there are no labels to augment, just augment the audio and return
+            if not label_keys:
+                output_dict = self.wave_aug(samples=input_values, sample_rate=self.sample_rate)
+                input_values = output_dict.samples
+                return input_values, labels_dict
+
+            original_tensors = [labels_dict[key] for key in label_keys]
+            original_sizes = [t.shape[1] for t in original_tensors]
+
+            # Concatenate along the class dimension to form a single label tensor
+            concatenated_labels = torch.cat(original_tensors, dim=1)
+
+            # Reshape for torch-audiomentations: [B, C, F, N]
+            # For clip-level labels, this is [B, 1, 1, N_total]
+            targets_4d = concatenated_labels.unsqueeze(1).unsqueeze(1)
+
             output_dict = self.wave_aug(
-                samples=input_values, sample_rate=self.sample_rate, targets=labels
+                samples=input_values, sample_rate=self.sample_rate, targets=targets_4d
             )
-            labels = output_dict.targets.squeeze(1).squeeze(1)
+            
+            # Squeeze the augmented labels back to 2D
+            augmented_labels_concatenated = output_dict.targets.squeeze(1).squeeze(1)
+
+            # Handle case where batch dimension might be squeezed if batch size is 1
+            if augmented_labels_concatenated.dim() < 2:
+                augmented_labels_concatenated = augmented_labels_concatenated.unsqueeze(0)
+
+            # Split the concatenated tensor back into separate label tensors
+            augmented_tensors = torch.split(augmented_labels_concatenated, original_sizes, dim=1)
+
+            labels_dict = {key: augmented_tensors[i] for i, key in enumerate(label_keys)}
 
         elif self.task == "multiclass":  # multilabel mix is questionable
             output_dict = self.wave_aug(
@@ -342,7 +384,7 @@ class BirdSetTransformsWrapper(BaseTransforms):
 
         input_values = output_dict.samples
 
-        return input_values, labels
+        return input_values, labels_dict
 
     def _get_waveform_batch(self, batch):
         waveform_batch = [audio["array"] for audio in batch["audio"]]
@@ -484,25 +526,27 @@ class BirdSetTransformsWrapper(BaseTransforms):
 class EmbeddingTransforms(BaseTransforms):
     def __init__(
         self,
+        target_columns: List[str],
         task: Literal["multiclass", "multilabel"] = "multiclass",
         sample_rate: int = 3200,
         max_length: int = 5,
         decoding: EventDecoding | None = None,
         feature_extractor: DefaultFeatureExtractor | None = None,
     ) -> None:
-        super().__init__(task, sample_rate, max_length, decoding, feature_extractor)
+        super().__init__(target_columns, task, sample_rate, max_length, decoding, feature_extractor)
 
     def _transform(self, batch):
         embeddings = [embedding for embedding in batch["embeddings"]]
 
         embeddings = torch.tensor(embeddings)
 
-        if self.task == "multiclass":
-            labels = batch["labels"]
+        labels_dict = {}
+        for col in self.target_columns:
+            if self.task == "multiclass":
+                labels_dict[col] = batch[col]
+            else:
+                # self.task == "multilabel"
+                # datatype of labels must be float32 to support BCEWithLogitsLoss
+                labels_dict[col] = torch.tensor(batch[col], dtype=torch.float32)
 
-        else:
-            # self.task == "multilabel"
-            # datatype of labels must be float32 to support BCEWithLogitsLoss
-            labels = torch.tensor(batch["labels"], dtype=torch.float32)
-
-        return {"input_values": embeddings, "labels": labels}
+        return {"input_values": embeddings, **labels_dict}

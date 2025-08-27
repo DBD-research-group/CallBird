@@ -95,7 +95,7 @@ class BirdSetDataModule(BaseDataModuleHF):
             dataset = DatasetDict(
                 {split: dataset[split] for split in ["train", "test"]}
             )
-
+            self.log = log
             log.info("> Mapping data set.")
             dataset["train"] = dataset["train"].map(
                 self.event_mapper,
@@ -165,6 +165,10 @@ class BirdSetDataModule(BaseDataModuleHF):
             for split in ["train", "test_5s"]:
                 dataset[split] = dataset[split].map(
                     self._classes_one_hot,
+                    fn_kwargs={
+                        "label_column_name": "labels",
+                        "num_classes": self.num_classes,
+                    },
                     batched=True,
                     batch_size=300,
                     load_from_cache_file=True,

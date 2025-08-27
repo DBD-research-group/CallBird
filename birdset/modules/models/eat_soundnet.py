@@ -182,7 +182,7 @@ class SoundNet(nn.Module):
             )
             self.num_classes = len(
                 datasets.load_dataset_builder(self.hf_path, self.hf_name)
-                .info.features["ebird_code"]
+                .info.features["ebird_code"] #@mai
                 .names
             )
         else:

@@ -482,9 +482,9 @@ class NoCallMixer:
 
         return absolute_file_paths
 
-    def __call__(self, input_values, labels):
-        b, c = labels.shape
-        for idx in range(len(input_values)):
+    def __call__(self, input_values, labels_dict):
+        batch_size = input_values.shape[0]
+        for idx in range(batch_size):
             if random.random() < self.p:
                 selected_path = random.choice(self.paths)
                 info = sf.info(selected_path)
@@ -511,13 +511,25 @@ class NoCallMixer:
 
                 audio = torch.tensor(audio)
 
-                if audio.numel() < input_values[idx].numel():
-                    padding = input_values[idx].numel() - audio.numel()
+                # The input_values tensor has a channel dimension, so the loaded audio needs one too.
+                if audio.dim() == 1:
+                    audio = audio.unsqueeze(0)
+
+                if audio.shape[-1] < input_values.shape[-1]:
+                    padding = input_values.shape[-1] - audio.shape[-1]
                     audio = torch.nn.functional.pad(audio, (0, padding))
+                elif audio.shape[-1] > input_values.shape[-1]:
+                    audio = audio[:, :input_values.shape[-1]]
+
 
                 input_values[idx] = audio
-                labels[idx] = torch.zeros(c)
-        return input_values, labels
+                
+                # Zero out the labels for all tasks for this sample
+                for key in labels_dict:
+                    num_classes = labels_dict[key].shape[1]
+                    labels_dict[key][idx] = torch.zeros(num_classes)
+
+        return input_values, labels_dict
 
 
 AudioFile = Union[Path, Text, dict]
