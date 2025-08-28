@@ -1,88 +1,10 @@
 # @package _global_
 #package global is neccessary!
 defaults:
-  - override /datamodule: POW.yaml
-  - override /module: multilabel.yaml
-  - override /module/network: convnext.yaml
-  - override /callbacks: default.yaml
-  - override /trainer: single_gpu.yaml
-  - override /datamodule/transforms: bird_default_multilabel.yaml
-  - override /paths: default.yaml
-  - override /hydra: default.yaml
+  - multi_three_common_convnext.yaml
 
-tags: []
-seed: 1
 train: True
 test: False
 
-logger:
-  wandb:
-    tags: ${tags}
-    group: "oekofor_multi_three_convnext"
-    mode: online
-    version: calltype_multi_three_convnext_${start_time} 
-
-module:
-  _target_: projects.callbird.src.multitask_module.MultiTaskModule
-  metrics_ebird:
-    _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: 56
-  metrics_calltype:
-    _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: 8
-  optimizer:
-    _target_: torch.optim.AdamW
-    lr: 5e-4
-    weight_decay: 5e-4
-  network:
-    num_classes_ebird: 56
-    num_classes_calltype: 8
-    torch_compile: False
-    model:
-      _target_: projects.callbird.src.models.ConvNextThreeLayers.ConvNextThreeLayers
-      pretrain_info: null
-
-trainer:
-  min_epochs: 1
-  max_epochs: 10
-  devices: [2]
-
 datamodule:
   _target_: projects.callbird.src.LocalOekoforTrainDataModule.LocalOekoforTrainDataModule
-  dataset:
-    hf_path: mai-leh/loading-testing
-    hf_name: OEKOFOR_TEST
-    val_split: 0.2
-    class_weights_loss: null
-    class_weights_sampler: null
-    classlimit: null
-    eventlimit: null
-    n_workers: 1
-  transforms:
-    waveform_augmentations: null
-    spectrogram_augmentations: null
-    target_columns: ["labels_ebird", "labels_calltype"]
-    preprocessing:
-      spectrogram_conversion:
-        n_fft: 2048
-        hop_length: 256
-        power: 2.0
-      melscale_conversion:
-        n_mels: 256
-        n_stft: 1025
-  loaders:
-    train:
-      batch_size: 32
-      num_workers: 1
-    valid:
-      batch_size: 32
-      num_workers: 1
-    test:
-      batch_size: 32
-      num_workers: 1
-  mapper: null
-
-callbacks:
-  model_checkpoint:
-    save_last: True
-    every_n_epochs: 5
