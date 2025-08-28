@@ -95,7 +95,6 @@ class BirdSetDataModule(BaseDataModuleHF):
             dataset = DatasetDict(
                 {split: dataset[split] for split in ["train", "test"]}
             )
-            self.log = log
             log.info("> Mapping data set.")
             dataset["train"] = dataset["train"].map(
                 self.event_mapper,
@@ -166,7 +165,7 @@ class BirdSetDataModule(BaseDataModuleHF):
                 dataset[split] = dataset[split].map(
                     self._classes_one_hot,
                     fn_kwargs={
-                        "label_column_name": "labels",
+                        "label_column_name": "labels", # we overwrite in the multi dataset, so this is fine
                         "num_classes": self.num_classes,
                     },
                     batched=True,

@@ -50,6 +50,7 @@ class BaseDataModuleHF(L.LightningDataModule):
         dataset: DatasetConfig = DatasetConfig(),
         loaders: LoadersConfig = LoadersConfig(),
         transforms: BirdSetTransformsWrapper = BirdSetTransformsWrapper(["labels"]),
+        weightsampler_column_name: str = "labels"
     ):
         super().__init__()
         self.dataset_config = dataset
@@ -70,6 +71,8 @@ class BaseDataModuleHF(L.LightningDataModule):
         # Make some config parameters accessible
         self.task = self.dataset_config.task
         self.train_batch_size = self.loaders_config.train.batch_size
+
+        self.weightsampler_column_name = weightsampler_column_name
 
     @property
     def num_classes(self):
@@ -330,7 +333,7 @@ class BaseDataModuleHF(L.LightningDataModule):
             split == "train"
         ):  # we need this for sampler, cannot be done later because set_transform
             if self.dataset_config.class_weights_sampler:
-                self.train_label_list = dataset["labels_ebird"]
+                self.train_label_list = dataset[self.weightsampler_column_name]
 
         # add run-time transforms to dataset
         dataset.set_transform(transforms, output_all_columns=False)

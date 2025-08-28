@@ -49,6 +49,7 @@ trainer:
 
 datamodule:
   _target_: projects.callbird.src.LocalOekoforTestDataModule.LocalOekoforTestDataModule
+  weightsampler_column_name: "labels_ebird"
   dataset:
     hf_path: mai-leh/loading-testing
     hf_name: callbird
