@@ -6,9 +6,13 @@ defaults:
 train: False
 test: True
 
+ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-08-28_191655/callback_checkpoints/last.ckpt
+
 datamodule:
   _target_: projects.callbird.src.NaiveTestDataModule.NaiveTestDataModule
 
-network:
-  model:
-    num_classes: 134
+module:
+  network:
+    model:
+      num_classes: 134
+      local_checkpoint: ${ckpt_path}

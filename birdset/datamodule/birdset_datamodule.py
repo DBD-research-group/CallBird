@@ -42,6 +42,7 @@ class BirdSetDataModule(BaseDataModuleHF):
         loaders: LoadersConfig = LoadersConfig(),
         transforms: BirdSetTransformsWrapper = BirdSetTransformsWrapper(),
         mapper: XCEventMapping = XCEventMapping(),
+        weightsampler_column_name: str = "labels"
     ):
         """
         Initializes the data module.
@@ -63,6 +64,7 @@ class BirdSetDataModule(BaseDataModuleHF):
             dataset=dataset,
             loaders=loaders,
             transforms=transforms,
+            weightsampler_column_name=weightsampler_column_name
         )
         self.event_mapper = mapper
 

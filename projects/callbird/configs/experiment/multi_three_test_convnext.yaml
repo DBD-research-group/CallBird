@@ -5,10 +5,13 @@ defaults:
 
 train: False
 test: True
-ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-08-27_231046/callback_checkpoints/last.ckpt
+ckpt_path: /workspace/logs/train/runs/OEKOFOR_TEST/convnext/2025-08-26_230706/callback_checkpoints/last.ckpt
+
+trainer:
+  devices: [1]
 
 datamodule:
-  _target_: projects.callbird.src.LocalOekoforTestDataModule.LocalOekoforTestDataModule
+  _target_: projects.callbird.src.MultiTestDataModule.MultiTestDataModule
 
 module:
   network:

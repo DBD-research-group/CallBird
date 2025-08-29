@@ -1,7 +1,11 @@
+from callbird.src.ensure_torch_safe_globals import ensure_torch_safe_globals
 from projects.callbird.src.NaiveDataModule import NaiveDataModule
 from callbird.src.readUtils import readCommentedList, readLabeledMapping
 from datasets import concatenate_datasets, load_dataset, DatasetDict, IterableDataset, IterableDatasetDict, Audio, Features, Value, Dataset
 from os import path
+
+# I don't know why this is needed, since it works for others without, but due to the limited time, this is here to stay
+ensure_torch_safe_globals()
 
 class NaiveTestDataModule(NaiveDataModule):
 
@@ -39,6 +43,9 @@ class NaiveTestDataModule(NaiveDataModule):
         dataset = dataset.map(lambda x: {"short_call_type": calltype_mapping.get(x["vocalization_type"], None)}) # Using None to force an error if the vocalization type is not found
 
         dataset = dataset.filter(lambda x: x["ebird_code"] not in blacklist_ebird)
+
+        # Create naive classes
+        dataset = dataset.map(lambda x: { "ebird_code_and_call": f"{x['ebird_code']}_{x['short_call_type']}" })
 
         # Rename 'audio_filename' to 'filepath' to match what the base class expects
         dataset = dataset.rename_column("audio_filename", "filepath")
