@@ -39,7 +39,9 @@ module:
     num_classes_calltype: 8
     torch_compile: False
     model:
-      _target_: projects.callbird.src.models.ConvNextThreeLayers.ConvNextThreeLayers
+      _target_: projects.callbird.src.models.ConvNextMultiLayers.ConvNextMultiLayers
+      freeze_backbone: True
+      variant: single
       pretrain_info: null
 
 trainer:

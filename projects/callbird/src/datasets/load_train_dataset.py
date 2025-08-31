@@ -2,7 +2,7 @@ from callbird.src.readUtils import readLabeledMapping
 from datasets import concatenate_datasets, load_dataset, Features, Value
 from os import path
 
-def load_train_dataset(cache_dir: str):
+def load_train_dataset(cache_dir: str | None = None):
     dataset = load_dataset(
         "csv",
         data_files = "/workspace/oekofor/trainset/csvlabels/*.csv",
@@ -50,3 +50,5 @@ def load_train_dataset(cache_dir: str):
         return example
 
     dataset = dataset.map(update_filepath)
+
+    return dataset

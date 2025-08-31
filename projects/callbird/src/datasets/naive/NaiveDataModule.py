@@ -32,10 +32,11 @@ class NaiveDataModule(BirdSetDataModule):
             return
 
         assert isinstance(dataset, DatasetDict | Dataset)
-        dataset = self._ensure_train_test_splits(dataset)
+        dataset["test"] = dataset["train"]
+        # dataset = self._ensure_train_test_splits(dataset)
         def add_multilabel_column(example):
-            example["ebird_code"] = example["ebird_code_and_call"] # TODO: Check if this is correct / needed
-            example["ebird_code_multilabel"] = example["ebird_code_and_call"] # TODO: Check if this is correct / needed
+            example["ebird_code"] = example["ebird_code"] # TODO: Check if this is correct / needed
+            example["ebird_code_multilabel"] = example["ebird_code"] # TODO: Check if this is correct / needed
             return example
         
         dataset = dataset.map(add_multilabel_column)

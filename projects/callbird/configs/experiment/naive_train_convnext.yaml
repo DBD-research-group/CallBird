@@ -7,9 +7,9 @@ train: True
 test: False
 
 datamodule:
-  _target_: projects.callbird.src.NaiveTrainDataModule.NaiveTrainDataModule
+  _target_: projects.callbird.src.datasets.naive.NaiveTrainDataModule.NaiveTrainDataModule
 
 network:
   model:
-    num_classes: 198
+    num_classes: 56
     checkpoint: DBD-research-group/ConvNeXT-Base-BirdSet-XCL

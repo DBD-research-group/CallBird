@@ -1,0 +1,16 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - multi_common_convnext.yaml
+
+train: True
+test: False
+
+datamodule:
+  _target_: projects.callbird.src.datasets.multi.MultiTrainDataModule.MultiTrainDataModule
+
+module:
+  network:
+    model:
+      freeze_backbone: True
+      variant: ten

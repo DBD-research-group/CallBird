@@ -2,7 +2,7 @@ from callbird.src.readUtils import readCommentedList, readLabeledMapping
 from datasets import load_dataset, Features, Value
 from os import path
 
-def load_test_dataset(cache_dir: str):
+def load_test_dataset(cache_dir: str | None = None):
     # A list of classes not present in the train set.
     blacklist_ebird = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_ebird.txt")
 
@@ -10,7 +10,6 @@ def load_test_dataset(cache_dir: str):
         "csv",
         data_files = "/workspace/oekofor/testset/labels/*.csv",
         features = Features({ # TODO: Add all features available in BirdSet
-            "tsn_code": Value("string"),
             "ebird_code": Value("string"),
             "common_name": Value("string"),
             "vocalization_type": Value("string"),
@@ -49,3 +48,5 @@ def load_test_dataset(cache_dir: str):
         return example
 
     dataset = dataset.map(update_filepath)
+
+    return dataset
