@@ -22,12 +22,14 @@ module:
       freeze_backbone: null
       variant: null
       pretrain_info: null
+      local_checkpoint: ${ckpt_path}
 
 train: True
 test: False
+ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-09-01_140646/callback_checkpoints/last.ckpt
 
 trainer:
-  max_epochs: 10
+  max_epochs: 20
   devices: [3]
 
 datamodule:

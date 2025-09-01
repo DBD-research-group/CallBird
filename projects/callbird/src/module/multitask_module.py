@@ -4,6 +4,8 @@ from torch.nn import BCEWithLogitsLoss
 from torch.nn.modules.loss import _Loss
 from torch.optim import AdamW, Optimizer
 from functools import partial
+import torch
+from torchmetrics import Accuracy
 
 from birdset.modules.base_module import BaseModule
 from birdset.configs import (
@@ -22,6 +24,8 @@ class MultiTaskModule(BaseModule):
         lr_scheduler: Optional[LRSchedulerConfig] = LRSchedulerConfig(),
         metrics_ebird: MultilabelMetricsConfig = MultilabelMetricsConfig(),
         metrics_calltype: MultilabelMetricsConfig = MultilabelMetricsConfig(),
+        metrics_combined: MultilabelMetricsConfig = MultilabelMetricsConfig(),
+        metrics_combined_accuracy: Accuracy = Accuracy(task="binary"),
         logging_params: LoggingParamsConfig = LoggingParamsConfig(),
         **kwargs,
     ):
@@ -52,6 +56,17 @@ class MultiTaskModule(BaseModule):
         self.test_metric_calltype = metrics_calltype.main_metric.clone()
         self.val_metric_best_calltype = metrics_calltype.val_metric_best.clone()
 
+        # Metrics for combined task
+        self.train_metric_combined = metrics_combined.main_metric.clone()
+        self.val_metric_combined = metrics_combined.main_metric.clone()
+        self.test_metric_combined = metrics_combined.main_metric.clone()
+        self.val_metric_best_combined = metrics_combined.val_metric_best.clone()
+
+        self.train_metric_combined_accuracy = metrics_combined_accuracy.clone()
+        self.val_metric_combined_accuracy = metrics_combined_accuracy.clone()
+        self.test_metric_combined_accuracy = metrics_combined_accuracy.clone()
+        self.val_metric_best_combined_accuracy = metrics_combined.val_metric_best.clone()
+
     def model_step(self, batch, batch_idx):
         input_values, labels_ebird, labels_calltype = batch["input_values"], batch["labels_ebird"], batch["labels_calltype"]
         
@@ -73,9 +88,26 @@ class MultiTaskModule(BaseModule):
         self.train_metric_ebird(logits_ebird, targets_ebird.int())
         self.train_metric_calltype(logits_calltype, targets_calltype.int())
 
+# Combined metric
+        threshold = 0.5
+        preds_ebird = torch.sigmoid(logits_ebird)
+        preds_calltype = torch.sigmoid(logits_calltype)
+
+        # A prediction is correct if all labels for that task are correct.
+        correct_ebird = torch.all( (preds_ebird > threshold) == targets_ebird.bool(), dim=1)
+        correct_calltype = torch.all( (preds_calltype > threshold) == targets_calltype.bool(), dim=1)
+
+        # The combined prediction is correct only if both tasks are correct.
+        preds_combined = (correct_ebird & correct_calltype)
+        targets_combined = torch.ones_like(preds_combined)
+
+        self.train_metric_combined_accuracy(preds_combined, targets_combined)
+
         self.log(f"train/ebird_{self.train_metric_ebird.__class__.__name__}", self.train_metric_ebird, **asdict(self.logging_params))
         self.log(f"train/calltype_{self.train_metric_calltype.__class__.__name__}", self.train_metric_calltype, **asdict(self.logging_params))
-        
+        self.log(f"train/combined_accuracy_{self.train_metric_combined_accuracy.__class__.__name__}", self.train_metric_combined_accuracy, **asdict(self.logging_params))
+        self.log(f"train/combined_cmAP_{self.train_metric_combined.__class__.__name__}", self.train_metric_combined, **asdict(self.logging_params))
+
         return {"loss": loss}
 
     def validation_step(self, batch, batch_idx):
@@ -85,8 +117,29 @@ class MultiTaskModule(BaseModule):
         self.val_metric_ebird(logits_ebird, targets_ebird.int())
         self.val_metric_calltype(logits_calltype, targets_calltype.int())
 
+        # Combined metric
+        threshold = 0.5
+        preds_ebird = torch.sigmoid(logits_ebird)
+        preds_calltype = torch.sigmoid(logits_calltype)
+
+        # A prediction is correct if all labels for that task are correct.
+        correct_ebird = torch.all( (preds_ebird > threshold) == targets_ebird.bool(), dim=1)
+        correct_calltype = torch.all( (preds_calltype > threshold) == targets_calltype.bool(), dim=1)
+
+        # The combined prediction is correct only if both tasks are correct.
+        preds_combined = (correct_ebird & correct_calltype)
+        targets_combined = torch.ones_like(preds_combined)
+
+        self.val_metric_combined_accuracy(preds_combined, targets_combined)
+        self.val_metric_combined(
+            torch.cat([logits_ebird, logits_calltype], dim=1),
+            torch.cat([targets_ebird, targets_calltype], dim=1).int()
+        )
+
         self.log(f"val/ebird_{self.val_metric_ebird.__class__.__name__}", self.val_metric_ebird, **asdict(self.logging_params))
         self.log(f"val/calltype_{self.val_metric_calltype.__class__.__name__}", self.val_metric_calltype, **asdict(self.logging_params))
+        self.log(f"val/combined_accuracy_{self.val_metric_combined_accuracy.__class__.__name__}", self.val_metric_combined_accuracy, **asdict(self.logging_params))
+        self.log(f"val/combined_cmAP_{self.val_metric_combined.__class__.__name__}", self.val_metric_combined, **asdict(self.logging_params))
 
         return {"loss": loss}
 
@@ -97,8 +150,29 @@ class MultiTaskModule(BaseModule):
         self.test_metric_ebird(logits_ebird, targets_ebird.int())
         self.test_metric_calltype(logits_calltype, targets_calltype.int())
 
+        # Combined metric
+        threshold = 0.5
+        preds_ebird = torch.sigmoid(logits_ebird)
+        preds_calltype = torch.sigmoid(logits_calltype)
+
+        # A prediction is correct if all labels for that task are correct.
+        correct_ebird = torch.all( (preds_ebird > threshold) == targets_ebird.bool(), dim=1)
+        correct_calltype = torch.all( (preds_calltype > threshold) == targets_calltype.bool(), dim=1)
+
+        # The combined prediction is correct only if both tasks are correct.
+        preds_combined = (correct_ebird & correct_calltype)
+        targets_combined = torch.ones_like(preds_combined)
+
+        self.test_metric_combined_accuracy(preds_combined, targets_combined)
+        self.test_metric_combined(
+            torch.cat([logits_ebird, logits_calltype], dim=1),
+            torch.cat([targets_ebird, targets_calltype], dim=1).int()
+        )
+
         self.log(f"test/ebird_{self.test_metric_ebird.__class__.__name__}", self.test_metric_ebird, **asdict(self.logging_params))
         self.log(f"test/calltype_{self.test_metric_calltype.__class__.__name__}", self.test_metric_calltype, **asdict(self.logging_params))
+        self.log(f"test/combined_accuracy_{self.test_metric_combined_accuracy.__class__.__name__}", self.test_metric_combined_accuracy, **asdict(self.logging_params))
+        self.log(f"test/combined_cmAP_{self.test_metric_combined.__class__.__name__}", self.test_metric_combined, **asdict(self.logging_params))
 
         return {"loss": loss}
 
@@ -108,6 +182,8 @@ class MultiTaskModule(BaseModule):
         """
         self.val_metric_best_ebird.reset()
         self.val_metric_best_calltype.reset()
+        self.val_metric_best_combined.reset()
+        self.val_metric_best_combined_accuracy.reset()
 
     def on_validation_epoch_end(self):
         """
@@ -128,5 +204,22 @@ class MultiTaskModule(BaseModule):
         self.log(
             f"val/calltype_{self.val_metric_calltype.__class__.__name__}_best",
             self.val_metric_best_calltype.compute(),
+            prog_bar=True
+        )
+
+        # Combined task
+        val_metric_combined_accuracy = self.val_metric_combined_accuracy.compute()
+        self.val_metric_best_combined_accuracy.update(val_metric_combined_accuracy)
+        self.log(
+            f"val/combined_accuracy_{self.val_metric_combined_accuracy.__class__.__name__}_best",
+            self.val_metric_best_combined_accuracy.compute(),
+            prog_bar=True
+        )
+
+        val_metric_combined = self.val_metric_combined.compute()
+        self.val_metric_best_combined.update(val_metric_combined)
+        self.log(
+            f"val/combined_cmAP_{self.val_metric_combined.__class__.__name__}_best",
+            self.val_metric_best_combined.compute(),
             prog_bar=True
         )
