@@ -164,18 +164,25 @@ class BirdSetDataModule(BaseDataModuleHF):
 
             log.info(">> One-hot-encode classes")
             for split in ["train", "test_5s"]:
-                dataset[split] = dataset[split].map(
-                    self._classes_one_hot,
-                    fn_kwargs={
-                        "label_column_name": "labels", # we overwrite in the multi dataset, so this is fine
-                        "num_classes": self.num_classes,
-                    },
-                    batched=True,
-                    batch_size=300,
-                    load_from_cache_file=True,
-                    num_proc=self.dataset_config.n_workers,
-                    desc=f"One-hot-encoding {split} labels.",
-                )
+                for col in self.transforms.target_columns:
+                    # tmp solution for getting number of classes
+                    if not col == "labels_ebird":
+                        acc_num_classes = dataset[split].features[col].num_classes
+                    else:
+                        acc_num_classes = self.num_classes
+
+                    dataset[split] = dataset[split].map(
+                        self._classes_one_hot,
+                        batched=True,
+                        batch_size=300,
+                        load_from_cache_file=True,
+                        num_proc=self.dataset_config.n_workers,
+                        desc=f"One-hot-encoding {split} labels for {col}.",
+                        fn_kwargs={
+                            "label_column_name": col,
+                            "num_classes": acc_num_classes
+                        },
+                    )
 
             if (
                 self.dataset_config.class_weights_loss

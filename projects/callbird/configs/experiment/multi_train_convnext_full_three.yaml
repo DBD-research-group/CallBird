@@ -7,7 +7,7 @@ train: True
 test: False
 
 trainer:
-  devices: [0]
+  devices: [3]
 
 datamodule:
   _target_: projects.callbird.src.datasets.multi.MultiTrainDataModule.MultiTrainDataModule
@@ -15,5 +15,5 @@ datamodule:
 module:
   network:
     model:
-      freeze_backbone: True
-      variant: single
+      freeze_backbone: False
+      variant: three

@@ -176,7 +176,7 @@ class BaseTransforms:
         transformed_labels = {}
         for name, labels in labels_dict.items():
             if self.task == "multilabel":  # for bcelosswithlogits
-                transformed_labels[name] = torch.tensor(labels, dtype=torch.float32)
+                transformed_labels[name] = torch.tensor(labels, dtype=torch.float16)
 
             elif self.task == "multiclass":
                 transformed_labels[name] = labels
@@ -340,6 +340,7 @@ class BirdSetTransformsWrapper(BaseTransforms):
             input_values = spectrograms
         return input_values
 
+    # @mai
     def _waveform_augmentation(self, input_values, labels_dict):
         if self.task == "multilabel":
             label_keys = list(labels_dict.keys())
@@ -540,6 +541,7 @@ class EmbeddingTransforms(BaseTransforms):
 
         embeddings = torch.tensor(embeddings)
 
+        # @mai
         labels_dict = {}
         for col in self.target_columns:
             if self.task == "multiclass":

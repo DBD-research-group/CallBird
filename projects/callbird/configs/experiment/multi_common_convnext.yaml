@@ -18,12 +18,12 @@ test: False
 logger:
   wandb:
     tags: ${tags}
-    group: "oekofor_multi_three_convnext"
+    group: "oekofor_multi_convnext"
     mode: online
-    version: calltype_multi_three_convnext_${start_time} 
+    version: calltype_multi_convnext_${start_time} 
 
 module:
-  _target_: projects.callbird.src.multitask_module.MultiTaskModule
+  _target_: projects.callbird.src.module.multitask_module.MultiTaskModule
   metrics_ebird:
     _target_: birdset.configs.MultilabelMetricsConfig
     num_labels: 56

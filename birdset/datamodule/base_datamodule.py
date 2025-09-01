@@ -76,8 +76,6 @@ class BaseDataModuleHF(L.LightningDataModule):
 
     @property
     def num_classes(self):
-        raise ValueError("This should not be called")
-
         return len(
             datasets.load_dataset_builder(
                 self.dataset_config.hf_path, self.dataset_config.hf_name

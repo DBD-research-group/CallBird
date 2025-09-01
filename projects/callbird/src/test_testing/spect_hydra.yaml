@@ -1,0 +1,224 @@
+task_name: train
+ckpt_path: null
+seed: 1
+module:
+  network:
+    model:
+      _target_: projects.callbird.src.models.ConvNextMultiLayers.ConvNextMultiLayers
+      num_classes: null
+      num_channels: 1
+      checkpoint: facebook/convnext-base-224-22k
+      local_checkpoint: null
+      cache_dir: ${paths.dataset_path}/models/
+      pretrain_info: null
+      freeze_backbone: false
+      variant: ten
+    model_name: convnext
+    model_type: vision
+    torch_compile: false
+    sample_rate: 32000
+    normalize_waveform: null
+    normalize_spectrogram: true
+    num_classes_ebird: 56
+    num_classes_calltype: 8
+  _target_: projects.callbird.src.module.multitask_module.MultiTaskModule
+  task: multilabel
+  prediction_table: false
+  num_gpus: ${trainer.devices}
+  optimizer:
+    _target_: torch.optim.AdamW
+    _partial_: true
+    lr: 0.0005
+    weight_decay: 0.0005
+  metrics:
+    _target_: birdset.configs.module_configs.MultilabelMetricsConfig
+    num_labels: ${datamodule.dataset.n_classes}
+  loss:
+    _target_: torch.nn.BCEWithLogitsLoss
+  output_activation:
+    _target_: torch.sigmoid
+    _partial_: true
+  logging_params:
+    _target_: birdset.modules.base_module.LoggingParamsConfig
+    on_step: false
+    on_epoch: true
+    sync_dist: false
+    prog_bar: true
+  metrics_ebird:
+    _target_: birdset.configs.MultilabelMetricsConfig
+    num_labels: 56
+  metrics_calltype:
+    _target_: birdset.configs.MultilabelMetricsConfig
+    num_labels: 8
+logger:
+  wandb:
+    mode: online
+    _target_: pytorch_lightning.loggers.WandbLogger
+    name: ${module.network.model_name}_${datamodule.dataset.hf_name}#${seed}_${start_time}
+    save_dir: ${paths.log_dir}
+    id: null
+    project: CallBird
+    log_model: false
+    entity: deepbirddetect
+    group: oekofor_multi_convnext
+    tags: ${tags}
+    job_type: ''
+    version: calltype_multi_convnext_${start_time}
+train: true
+test: false
+save_state_dict: true
+start_time: ${now:%Y-%m-%d_%H%M%S}
+dump_metrics: true
+datamodule:
+  _target_: projects.callbird.src.datasets.multi.MultiTrainDataModule.MultiTrainDataModule
+  dataset:
+    data_dir: ${paths.dataset_path}
+    hf_path: mai-leh/loading-testing
+    hf_name: callbird
+    seed: ${seed}
+    n_workers: 1
+    val_split: 0.2
+    task: ${module.task}
+    subset: null
+    sample_rate: ${module.network.sample_rate}
+    class_weights_loss: null
+    class_weights_sampler: null
+    classlimit: null
+    eventlimit: null
+  transforms:
+    _target_: birdset.datamodule.components.transforms.BirdSetTransformsWrapper
+    sample_rate: ${module.network.sample_rate}
+    model_type: ${module.network.model_type}
+    task: ${datamodule.dataset.task}
+    max_length: 5
+    preprocessing:
+      spectrogram_conversion:
+        _target_: torchaudio.transforms.Spectrogram
+        n_fft: 1024
+        hop_length: 320
+        power: 2.0
+      melscale_conversion:
+        _target_: torchaudio.transforms.MelScale
+        n_mels: 128
+        sample_rate: ${module.network.sample_rate}
+        n_stft: 513
+      dbscale_conversion:
+        _target_: birdset.datamodule.components.augmentations.PowerToDB
+      resizer:
+        _target_: birdset.datamodule.components.resize.Resizer
+        db_scale: true
+        target_height: null
+        target_width: null
+      normalize_waveform: ${module.network.normalize_waveform}
+      normalize_spectrogram: ${module.network.normalize_spectrogram}
+      mean: -4.268
+      std: 4.569
+    decoding:
+      _target_: birdset.datamodule.components.EventDecoding
+      min_len: 1.0
+      max_len: 5.0
+      sample_rate: ${module.network.sample_rate}
+      extension_time: 8
+      extracted_interval: 5
+    feature_extractor:
+      _target_: birdset.datamodule.components.DefaultFeatureExtractor
+      feature_size: 1
+      sample_rate: ${module.network.sample_rate}
+      padding_value: 0.0
+      return_attention_mask: false
+    nocall_sampler:
+      _target_: birdset.datamodule.components.augmentations.NoCallMixer
+      directory: ${paths.background_path}
+      p: 0.075
+      sample_rate: ${module.network.sample_rate}
+      length: 5
+    target_columns:
+    - labels_ebird
+    - labels_calltype
+  loaders:
+    _target_: birdset.datamodule.LoadersConfig
+    train:
+      _target_: birdset.datamodule.LoaderConfig
+      batch_size: 32
+      shuffle: true
+      num_workers: 1
+      drop_last: false
+      persistent_workers: true
+      pin_memory: false
+    valid:
+      _target_: birdset.datamodule.LoaderConfig
+      batch_size: 32
+      shuffle: false
+      num_workers: 1
+      drop_last: false
+      persistent_workers: true
+      pin_memory: false
+    test:
+      _target_: birdset.datamodule.LoaderConfig
+      batch_size: 32
+      shuffle: false
+      num_workers: 1
+      drop_last: false
+      pin_memory: false
+  mapper: null
+  weightsampler_column_name: labels_ebird
+callbacks:
+  lr_monitor:
+    _target_: lightning.pytorch.callbacks.LearningRateMonitor
+    logging_interval: step
+  time_tracking:
+    _target_: birdset.callbacks.TimeCallback
+  model_summary:
+    _target_: lightning.pytorch.callbacks.RichModelSummary
+    max_depth: 1
+  rich_progress_bar:
+    _target_: lightning.pytorch.callbacks.RichProgressBar
+  model_checkpoint:
+    _target_: lightning.pytorch.callbacks.ModelCheckpoint
+    dirpath: ${paths.output_dir}/callback_checkpoints
+    filename: ${module.network.model_name}_${datamodule.dataset.hf_name}_{epoch:02d}
+    monitor: val/BCEWithLogitsLoss
+    verbose: false
+    save_last: true
+    save_top_k: 2
+    mode: min
+    auto_insert_metric_name: false
+    save_weights_only: false
+    every_n_train_steps: null
+    train_time_interval: null
+    every_n_epochs: 5
+    save_on_train_epoch_end: null
+paths:
+  root_dir: ${oc.env:PROJECT_ROOT}
+  work_dir: ${hydra:runtime.cwd}
+  output_dir: ${hydra:runtime.output_dir}
+  dataset_path: ${paths.root_dir}/data_birdset/${datamodule.dataset.hf_name}
+  model_path: ${paths.root_dir}/data_birdset/models/
+  background_path: ${paths.root_dir}/data_birdset/background_noise/
+  log_dir: ${paths.root_dir}/logs/
+trainer:
+  _target_: lightning.Trainer
+  default_root_dir: paths.output_dir
+  min_epochs: 1
+  max_epochs: 30
+  accelerator: gpu
+  devices:
+  - 2
+  enable_checkpointing: true
+  fast_dev_run: false
+  strategy: auto
+  deterministic: false
+  gradient_clip_val: 0.5
+  accumulate_grad_batches: 1
+  precision: 16
+extras:
+  ignore_warnings: true
+  enforce_tags: false
+  print_config: true
+  plugins: null
+  state_dict_saving_params:
+    symbols: 6
+    exceptions:
+    - loss
+  dump_metrics: true
+tags: []

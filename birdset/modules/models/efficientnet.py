@@ -42,9 +42,6 @@ class EfficientNetClassifier(nn.Module):
                 else pretrain_info.hf_pretrain_name
             )
 
-            # throw error
-            raise ValueError("This should not be called!!")
-
             self.num_classes = len(
                 datasets.load_dataset_builder(self.hf_path, self.hf_name)
                 .info.features["ebird_code"]

@@ -128,8 +128,6 @@ class BaseModule(L.LightningModule):
 
         # TODO: reimplement this
         if self.pretrain_info and self.pretrain_info.get("hf_pretrain_name"):
-            raise ValueError("This should not be called")
-
             print("Masking Logits")
             self.pretrain_dataset = self.pretrain_info["hf_pretrain_name"]
             self.hf_path = self.pretrain_info["hf_path"]

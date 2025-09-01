@@ -482,6 +482,7 @@ class NoCallMixer:
 
         return absolute_file_paths
 
+    # @mai
     def __call__(self, input_values, labels_dict):
         batch_size = input_values.shape[0]
         for idx in range(batch_size):
@@ -510,6 +511,8 @@ class NoCallMixer:
                     sr = self.sample_rate
 
                 audio = torch.tensor(audio)
+
+                # @mai
 
                 # The input_values tensor has a channel dimension, so the loaded audio needs one too.
                 if audio.dim() == 1:

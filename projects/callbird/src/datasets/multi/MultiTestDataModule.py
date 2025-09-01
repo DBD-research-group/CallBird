@@ -1,10 +1,8 @@
-from os import path
-from callbird.src.data.multi.MultiDataModule import MultiDataModule
-from callbird.src.data import load_test_dataset
+from callbird.src.datasets.multi.MultiDataModule import MultiDataModule
+from callbird.src.datasets.load_test_dataset import load_test_dataset
 from callbird.src.ensure_torch_safe_globals import ensure_torch_safe_globals
-from callbird.src.readUtils import readCommentedList, readLabeledMapping
-from birdset.datamodule import BirdSetDataModule
-from datasets import load_dataset, DatasetDict, Features, Value
+from callbird.src.readUtils import readLabeledMapping
+from datasets import DatasetDict
 
 # I don't know why this is needed, since it works for others without, but due to the limited time, this is here to stay
 ensure_torch_safe_globals()

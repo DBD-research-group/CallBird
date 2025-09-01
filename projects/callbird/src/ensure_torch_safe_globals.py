@@ -43,7 +43,8 @@ from birdset.configs.module_configs import (
 )
 from birdset.modules.metrics.multilabel import TopKAccuracy, cmAP, cmAP5, mAP, pcmAP
 from birdset.modules.models.convnext import ConvNextClassifier
-from callbird.src.models.ConvNextMultiLayers import ConvNextMultiLayers, SingleLayerHead, ThreeLayerHead, TenLayerHead
+from projects.callbird.src.models.ConvNextMultiLayers import ConvNextMultiLayers, SingleLayerHead, ThreeLayerHead, TenLayerHead
+from projects.callbird.src.models.ConvNextNoLayers import ConvNextNoLayers
 
 
 def ensure_torch_safe_globals():
@@ -68,6 +69,7 @@ def ensure_torch_safe_globals():
             ConvNextLayerNorm,
             ConvNextModel,
             ConvNextStage,
+            ConvNextNoLayers,
             DictConfig,
             FloatStorage,
             GELUActivation,

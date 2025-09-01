@@ -6,6 +6,9 @@ defaults:
 train: True
 test: False
 
+trainer:
+  devices: [2]
+
 datamodule:
   _target_: projects.callbird.src.datasets.multi.MultiTrainDataModule.MultiTrainDataModule
 

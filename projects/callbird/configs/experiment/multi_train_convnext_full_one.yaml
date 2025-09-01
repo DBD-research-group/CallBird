@@ -15,5 +15,5 @@ datamodule:
 module:
   network:
     model:
-      freeze_backbone: True
+      freeze_backbone: False
       variant: single
