@@ -26,13 +26,13 @@ module:
 
 train: False
 test: True
-ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-09-01_100622/callback_checkpoints/convnext_callbird_09.ckpt
+ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-09-01_164722/callback_checkpoints/convnext_callbird_14.ckpt
 
 trainer:
   max_epochs: 30
   devices: [0]
 
 datamodule:
-  _target_: projects.callbird.src.datasets.naive_as_multi.NaiveAsMultiCleanTrainDataModule.NaiveAsMultiCleanTrainDataModule
+  _target_: projects.callbird.src.datasets.naive_as_multi.NaiveAsMultiCleanTestDataModule.NaiveAsMultiCleanTestDataModule
   transforms:
     target_columns: ["labels_ebird"]

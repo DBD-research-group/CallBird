@@ -30,9 +30,6 @@ module:
   metrics_calltype:
     _target_: birdset.configs.MultilabelMetricsConfig
     num_labels: 8
-  metrics_combined:
-    _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: 64
   optimizer:
     _target_: torch.optim.AdamW
     lr: 5e-4

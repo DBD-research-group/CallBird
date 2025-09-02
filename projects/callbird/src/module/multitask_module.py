@@ -5,7 +5,7 @@ from torch.nn.modules.loss import _Loss
 from torch.optim import AdamW, Optimizer
 from functools import partial
 import torch
-from torchmetrics import Accuracy
+from torchmetrics import Accuracy, MetricCollection
 
 from birdset.modules.base_module import BaseModule
 from birdset.configs import (
@@ -14,6 +14,9 @@ from birdset.configs import (
     MultilabelMetricsConfig,
     LoggingParamsConfig,
 )
+from birdset.modules.metrics.multilabel import cmAP
+from torchmetrics.classification import MultilabelAccuracy, MultilabelExactMatch
+
 
 class MultiTaskModule(BaseModule):
     def __init__(
@@ -24,7 +27,13 @@ class MultiTaskModule(BaseModule):
         lr_scheduler: Optional[LRSchedulerConfig] = LRSchedulerConfig(),
         metrics_ebird: MultilabelMetricsConfig = MultilabelMetricsConfig(),
         metrics_calltype: MultilabelMetricsConfig = MultilabelMetricsConfig(),
-        metrics_combined: MultilabelMetricsConfig = MultilabelMetricsConfig(),
+        metrics_combined: MetricCollection = MetricCollection(
+            [
+                cmAP(num_labels=106),
+                MultilabelAccuracy(num_labels=106),
+                MultilabelExactMatch(num_labels=106),
+            ]
+        ),
         logging_params: LoggingParamsConfig = LoggingParamsConfig(),
         **kwargs,
     ):
@@ -38,7 +47,7 @@ class MultiTaskModule(BaseModule):
             loss=loss,
             optimizer=optimizer,
             lr_scheduler=lr_scheduler,
-            metrics=None, # Explicitly pass None for metrics
+            metrics=None,  # Explicitly pass None for metrics
             **kwargs,
         )
         self.logging_params = logging_params
@@ -56,10 +65,15 @@ class MultiTaskModule(BaseModule):
         self.val_metric_best_calltype = metrics_calltype.val_metric_best.clone()
 
         # Metrics for combined task
-        self.train_metric_combined = metrics_combined.main_metric.clone()
-        self.val_metric_combined = metrics_combined.main_metric.clone()
-        self.test_metric_combined = metrics_combined.main_metric.clone()
-        self.val_metric_best_combined = metrics_combined.val_metric_best.clone()
+        self.train_metric_combined = metrics_combined.clone()
+        self.val_metric_combined = metrics_combined.clone()
+        self.test_metric_combined = metrics_combined.clone()
+        self.val_metric_best_combined_exact = (
+            metrics_ebird.val_metric_best.clone()
+        )  # Use one of the val_metric_best
+        self.val_metric_best_combined_cmap = (
+            metrics_ebird.val_metric_best.clone()
+        )  # Use one of the val_metric_best
 
     def model_step(self, batch, batch_idx):
         input_values, labels_ebird, labels_calltype = batch["input_values"], batch["labels_ebird"], batch["labels_calltype"]
@@ -81,11 +95,19 @@ class MultiTaskModule(BaseModule):
         self.log(f"train/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
         self.train_metric_ebird(logits_ebird, targets_ebird.int())
         self.train_metric_calltype(logits_calltype, targets_calltype.int())
-        self.train_metric_combined(torch.cat([logits_ebird, logits_calltype], dim=1), torch.cat([targets_ebird, targets_calltype], dim=1).int())
+        
+        logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
+        targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
+
+        pad_size = 106 - logits_combined.shape[1]
+        logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
+        targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
+
+        self.train_metric_combined.update(logits_combined, targets_combined)
 
         self.log(f"train/ebird_{self.train_metric_ebird.__class__.__name__}", self.train_metric_ebird, **asdict(self.logging_params))
         self.log(f"train/calltype_{self.train_metric_calltype.__class__.__name__}", self.train_metric_calltype, **asdict(self.logging_params))
-        self.log(f"train/combined_cmAP_{self.train_metric_combined.__class__.__name__}", self.train_metric_combined, **asdict(self.logging_params))
+        self.log_dict(self.train_metric_combined, **asdict(self.logging_params))
 
         return {"loss": loss}
 
@@ -95,11 +117,19 @@ class MultiTaskModule(BaseModule):
         self.log(f"val/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
         self.val_metric_ebird(logits_ebird, targets_ebird.int())
         self.val_metric_calltype(logits_calltype, targets_calltype.int())
-        self.val_metric_combined(torch.cat([logits_ebird, logits_calltype], dim=1), torch.cat([targets_ebird, targets_calltype], dim=1).int())
+
+        logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
+        targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
+
+        pad_size = 106 - logits_combined.shape[1]
+        logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
+        targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
+        
+        self.val_metric_combined.update(logits_combined, targets_combined)
 
         self.log(f"val/ebird_{self.val_metric_ebird.__class__.__name__}", self.val_metric_ebird, **asdict(self.logging_params))
         self.log(f"val/calltype_{self.val_metric_calltype.__class__.__name__}", self.val_metric_calltype, **asdict(self.logging_params))
-        self.log(f"val/combined_cmAP_{self.val_metric_combined.__class__.__name__}", self.val_metric_combined, **asdict(self.logging_params))
+        self.log_dict(self.val_metric_combined, **asdict(self.logging_params))
 
         return {"loss": loss}
 
@@ -109,11 +139,19 @@ class MultiTaskModule(BaseModule):
         self.log(f"test/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
         self.test_metric_ebird(logits_ebird, targets_ebird.int())
         self.test_metric_calltype(logits_calltype, targets_calltype.int())
-        self.test_metric_combined(torch.cat([logits_ebird, logits_calltype], dim=1), torch.cat([targets_ebird, targets_calltype], dim=1).int())
+
+        logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
+        targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
+
+        pad_size = 106 - logits_combined.shape[1]
+        logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
+        targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
+
+        self.test_metric_combined.update(logits_combined, targets_combined)
 
         self.log(f"test/ebird_{self.test_metric_ebird.__class__.__name__}", self.test_metric_ebird, **asdict(self.logging_params))
         self.log(f"test/calltype_{self.test_metric_calltype.__class__.__name__}", self.test_metric_calltype, **asdict(self.logging_params))
-        self.log(f"test/combined_cmAP_{self.test_metric_combined.__class__.__name__}", self.test_metric_combined, **asdict(self.logging_params))
+        self.log_dict(self.test_metric_combined, **asdict(self.logging_params))
 
         return {"loss": loss}
 
@@ -149,9 +187,18 @@ class MultiTaskModule(BaseModule):
 
         # Combined task
         val_metric_combined = self.val_metric_combined.compute()
-        self.val_metric_best_combined.update(val_metric_combined)
+        self.val_metric_best_combined_exact.update(
+            val_metric_combined["MultilabelExactMatch"]
+        )
         self.log(
-            f"val/combined_cmAP_{self.val_metric_combined.__class__.__name__}_best",
-            self.val_metric_best_combined.compute(),
-            prog_bar=True
+            f"val/combined_MultilabelExactMatch_best",
+            self.val_metric_best_combined_exact.compute(),
+            prog_bar=True,
+        )
+
+        self.val_metric_best_combined_cmap.update(val_metric_combined["cmAP"])
+        self.log(
+            f"val/combined_cmAP_best",
+            self.val_metric_best_combined_cmap.compute(),
+            prog_bar=True,
         )
