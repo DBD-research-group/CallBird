@@ -30,13 +30,13 @@ module:
   network:
     torch_compile: False
     model:
-      num_classes: 56
+      num_classes: 54
       pretrain_info: null
 
 trainer:
   min_epochs: 1
   max_epochs: 10
-  devices: [0]
+  devices: [1]
 
 datamodule:
   _target_: projects.callbird.src.datasets.naive.NaiveTestDataModule.NaiveTestDataModule

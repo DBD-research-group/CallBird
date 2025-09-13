@@ -38,6 +38,9 @@ def load_test_dataset(cache_dir: str | None = None):
     # Rename 'audio_filename' to 'filepath' to match what the base class expects
     dataset = dataset.rename_column("audio_filename", "filepath")
 
+    blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_naive.txt")
+    dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
+
     # Setting absolute paths for the audio files
     def update_filepath(example):
         example["filepath"] = f"/workspace/oekofor/testset/audio_files/{example['filepath']}.flac"

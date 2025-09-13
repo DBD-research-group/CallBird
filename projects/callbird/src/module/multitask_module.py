@@ -161,7 +161,8 @@ class MultiTaskModule(BaseModule):
         """
         self.val_metric_best_ebird.reset()
         self.val_metric_best_calltype.reset()
-        self.val_metric_best_combined.reset()
+        self.val_metric_best_combined_exact.reset()
+        self.val_metric_best_combined_cmap.reset()
 
     def on_validation_epoch_end(self):
         """

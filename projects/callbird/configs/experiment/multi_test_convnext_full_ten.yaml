@@ -5,7 +5,7 @@ defaults:
 
 train: False
 test: True
-ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-08-31_103817/callback_checkpoints/last.ckpt
+ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-09-02_183610/callback_checkpoints/last.ckpt
 
 trainer:
   devices: [1]

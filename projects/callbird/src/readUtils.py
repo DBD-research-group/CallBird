@@ -10,7 +10,7 @@ def readCommentedList(file_path: str):
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
     return []
 
-def readLabeledMapping(file_path: str, label: str | None):
+def readLabeledMapping(file_path: str, label: str | None = None):
     """
     Reads a labeled mapping from a file (including unlabeled data).
     Args:

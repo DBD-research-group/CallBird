@@ -15,10 +15,10 @@ module:
   _target_: projects.callbird.src.module.multitask_module.MultiTaskModule
   metrics_ebird:
     _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: 56
+    num_labels: 54
   metrics_calltype:
     _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: 8
+    num_labels: 7
   network:
     model:
       num_classes: 61

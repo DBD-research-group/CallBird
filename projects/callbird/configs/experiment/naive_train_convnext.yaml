@@ -11,5 +11,5 @@ datamodule:
 
 network:
   model:
-    num_classes: 56
+    num_classes: 54
     checkpoint: DBD-research-group/ConvNeXT-Base-BirdSet-XCL

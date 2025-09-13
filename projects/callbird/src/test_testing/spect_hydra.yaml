@@ -19,7 +19,7 @@ module:
     sample_rate: 32000
     normalize_waveform: null
     normalize_spectrogram: true
-    num_classes_ebird: 56
+    num_classes_ebird: 54
     num_classes_calltype: 8
   _target_: projects.callbird.src.module.multitask_module.MultiTaskModule
   task: multilabel
@@ -46,7 +46,7 @@ module:
     prog_bar: true
   metrics_ebird:
     _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: 56
+    num_labels: 54
   metrics_calltype:
     _target_: birdset.configs.MultilabelMetricsConfig
     num_labels: 8

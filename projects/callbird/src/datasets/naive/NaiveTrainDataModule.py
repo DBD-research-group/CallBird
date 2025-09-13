@@ -6,7 +6,7 @@ class NaiveTrainDataModule(NaiveDataModule):
 
     @property
     def num_classes(self):
-        return 56
+        return 54
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
         dataset = load_train_dataset(self.dataset_config.data_dir)
