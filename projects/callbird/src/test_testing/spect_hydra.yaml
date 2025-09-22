@@ -126,12 +126,6 @@ datamodule:
       sample_rate: ${module.network.sample_rate}
       padding_value: 0.0
       return_attention_mask: false
-    nocall_sampler:
-      _target_: birdset.datamodule.components.augmentations.NoCallMixer
-      directory: ${paths.background_path}
-      p: 0.075
-      sample_rate: ${module.network.sample_rate}
-      length: 5
     target_columns:
     - labels_ebird
     - labels_calltype

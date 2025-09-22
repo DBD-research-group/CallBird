@@ -46,12 +46,12 @@ def generate_spectrograms(cfg: DictConfig) -> None:
     spec_params = transforms_cfg.get('spectrogram_transformer', {})
     mel_spec_params = spec_params.get('params', {})
     
-    sample_rate = transforms_cfg.get('sample_rate', 32000)
+    sample_rate = transforms_cfg.get('sample_rate', 100_000)
     n_mels = mel_spec_params.get('n_mels', 128)
     n_fft = mel_spec_params.get('n_fft', 1024)
     hop_length = mel_spec_params.get('hop_length', 320)
 
-    num_samples_to_export = 5
+    num_samples_to_export = 20
     exported_count = 0
     for i, item in enumerate(dataset):
         if exported_count >= num_samples_to_export:
@@ -91,7 +91,8 @@ def generate_spectrograms(cfg: DictConfig) -> None:
         
         spectrogram_np = spectrogram.numpy()
 
-        img = librosa.display.specshow(spectrogram_np, sr=sample_rate, hop_length=hop_length,
+        img = librosa.display.specshow(librosa.amplitude_to_db(spectrogram_np, ref=np.max),
+                                       sr=sample_rate, hop_length=hop_length,
                                        x_axis='time', y_axis='mel', ax=ax, fmax=sample_rate / 2)
         fig.colorbar(img, ax=ax, format='%+2.0f dB', label='Decibels')
         ax.set_title(f"Sample {i} Spectrogram ({ebird_code} - {calltype})")

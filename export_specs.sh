@@ -1,0 +1,1 @@
+PROJECT_ROOT=$(pwd) python projects/callbird/src/test_testing/export_spectograms.py <path_to_config> --ebird_code amecro --call_type flight-call --ebird_col labels_ebird --calltype_col labels_calltype
