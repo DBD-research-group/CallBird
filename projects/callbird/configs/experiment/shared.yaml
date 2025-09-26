@@ -23,7 +23,7 @@ logger:
     version: callbird_${start_time} 
 
 module:
-  _target_: projects.callbird.src.module.multitask_module.MultiTaskModule
+  _target_: projects.callbird.src.module.multitask_module.TODO
   network:
     torch_compile: False
     sample_rate: 28000
