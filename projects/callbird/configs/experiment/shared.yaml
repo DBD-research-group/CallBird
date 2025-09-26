@@ -1,0 +1,77 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - override /datamodule: POW.yaml
+  - override /module: multilabel.yaml
+  - override /module/network: convnext.yaml
+  - override /callbacks: default.yaml
+  - override /trainer: single_gpu.yaml
+  - override /datamodule/transforms: bird_default_multilabel.yaml
+  - override /paths: default.yaml
+  - override /hydra: default.yaml
+
+tags: []
+seed: 1
+train: False
+test: False
+
+logger:
+  wandb:
+    mode: online
+    tags: ${tags}
+    group: callbird
+    version: callbird_${start_time} 
+
+module:
+  _target_: projects.callbird.src.module.multitask_module.MultiTaskModule
+  network:
+    torch_compile: False
+    sample_rate: 28000
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 5e-4
+    weight_decay: 5e-4
+  metrics_ebird:
+    _target_: birdset.configs.MultilabelMetricsConfig
+    num_labels: ${module.network.num_classes_ebird}
+  metrics_calltype:
+    _target_: birdset.configs.MultilabelMetricsConfig
+    num_labels: ${module.network.num_classes_calltype}
+
+datamodule:
+  _target_: projects.callbird.src.TODO.TODO
+  dataset:
+    hf_path: mai-leh/loading-testing
+    hf_name: callbird
+    n_workers: 1
+    val_split: 0.2
+    class_weights_loss: null
+    class_weights_sampler: null
+    classlimit: null
+    eventlimit: null
+  transforms:
+    target_columns: ["labels_ebird", "labels_calltype"]
+  loaders:
+    train:
+      batch_size: 32
+      num_workers: 1
+    valid:
+      batch_size: 32
+      num_workers: 1
+    test:
+      batch_size: 32
+      num_workers: 1
+  mapper: null
+  weightsampler_column_name: labels_ebird
+
+callbacks:
+  model_checkpoint:
+    save_last: True
+    every_n_epochs: 5
+    monitor: val/ebird_BCEWithLogitsLoss
+
+trainer:
+  min_epochs: 1
+  max_epochs: 20
+  devices: [0]
+  deterministic: true

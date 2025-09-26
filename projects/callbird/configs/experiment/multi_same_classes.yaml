@@ -1,0 +1,13 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - multi.yaml
+
+module:
+  network:
+    num_classes_ebird: 54
+    num_classes_calltype: 7
+
+logger:
+  wandb:
+    version: callbird_multi_same_classes_${start_time} 

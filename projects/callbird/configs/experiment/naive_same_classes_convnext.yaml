@@ -1,0 +1,16 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - naive_same_classes.yaml
+
+module:
+  network:
+    model:
+      _target_: projects.callbird.src.models.ConvNextMultiLayers.ConvNextMultiLayers
+      pretrain_info: null
+      freeze_backbone: True
+      variant: three
+
+logger:
+  wandb:
+    version: callbird_naive_same_classes_convnext_${start_time} 

@@ -1,0 +1,17 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - shared.yaml
+
+module:
+  _target_: projects.callbird.src.module.multitask_module.MultiTaskModule.TODO
+
+datamodule:
+  _target_: projects.callbird.src.TODO.TODO
+  transforms:
+    target_columns: ["labels_ebird", "labels_calltype"]
+
+logger:
+  wandb:
+    group: callbird_multi
+    version: callbird_multi_${start_time} 
