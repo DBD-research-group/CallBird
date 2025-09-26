@@ -9,6 +9,7 @@ Alert : al
 # Alert ground : ag
 # Alert air : ai
 Other : or
+Filtered : null
 
 @train
 f (Flugruf) : fl
@@ -33,13 +34,13 @@ NA : or
 song : sn
 contact call : ct
 flight call : fl
-something : or
+something : null
 drumming : dr
 alarm call : al
-vocal : or
+vocal : null
 # ground alarm call : ag
 ground alarm call : al
-call : or
+call : null
 whistle : or
 # air alarm call : ai
 air alarm call : al

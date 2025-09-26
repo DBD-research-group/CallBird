@@ -12,13 +12,13 @@ module:
   _target_: projects.callbird.src.module.naive_multitask_module.NaiveMultiTaskModule
   metrics_ebird:
     _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: 198
+    num_labels: 106
   metrics_calltype: null
   network:
-    num_classes_ebird: 198
+    num_classes_ebird: 106
     num_classes_calltype: null
     model:
-      _target_: projects.callbird.src.models.ConvNextNoLayers.ConvNextNoLayers
+      _target_: projects.callbird.src.models.ConvNextSameNoLayers.ConvNextSameNoLayers
       freeze_backbone: null
       variant: null
       pretrain_info: null
@@ -26,12 +26,13 @@ module:
 
 train: False
 test: True
-ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-08-31_193520/callback_checkpoints/convnext_callbird_04.ckpt
+ckpt_path: /workspace/logs/train/runs/callbird/convnext/2025-09-02_094455/callback_checkpoints/convnext_callbird_14.ckpt
 
 trainer:
-  devices: [1]
+  max_epochs: 30
+  devices: [2]
 
 datamodule:
-  _target_: "projects.callbird.src.datasets.naive_as_multi.NaiveAsMultiTrainDataModule.NaiveAsMultiTrainDataModule"
+  _target_: projects.callbird.src.datasets.naive_as_multi.NaiveAsMultiCleanTestDataModule.NaiveAsMultiCleanTestDataModule
   transforms:
     target_columns: ["labels_ebird"]

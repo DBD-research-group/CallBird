@@ -44,7 +44,6 @@ from birdset.configs.module_configs import (
 from birdset.modules.metrics.multilabel import TopKAccuracy, cmAP, cmAP5, mAP, pcmAP
 from birdset.modules.models.convnext import ConvNextClassifier
 from projects.callbird.src.models.ConvNextMultiLayers import ConvNextMultiLayers, SingleLayerHead, ThreeLayerHead, TenLayerHead
-from projects.callbird.src.models.ConvNextNoLayers import ConvNextNoLayers
 from projects.callbird.src.models.ConvNextSameNoLayers import ConvNextSameNoLayers, SingleLayerHead as Sing
 from torchmetrics.classification.accuracy import MultilabelAccuracy
 from torchmetrics.classification.exact_match import MultilabelExactMatch
@@ -72,7 +71,6 @@ def ensure_torch_safe_globals():
             ConvNextLayerNorm,
             ConvNextModel,
             ConvNextStage,
-            ConvNextNoLayers,
             DictConfig,
             FloatStorage,
             GELUActivation,
