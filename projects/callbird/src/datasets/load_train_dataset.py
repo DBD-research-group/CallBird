@@ -4,7 +4,7 @@ from os import path
 
 def load_train_dataset(
         call_type_mapping_file: str,
-        cache_dir: str | None = None
+        cache_dir: str | None,
 ):
     dataset = load_dataset(
         "csv",
