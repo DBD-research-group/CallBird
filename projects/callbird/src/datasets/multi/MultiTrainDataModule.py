@@ -1,10 +1,7 @@
 from callbird.src.datasets.multi.MultiDataModule import MultiDataModule
 from callbird.src.datasets.load_train_dataset import load_train_dataset
 from callbird.src.ensure_torch_safe_globals import ensure_torch_safe_globals
-from callbird.src.readUtils import readCommentedList, readLabeledMapping
-from birdset.datamodule import BirdSetDataModule
-from datasets import concatenate_datasets, load_dataset, DatasetDict, IterableDataset, IterableDatasetDict, Audio, Features, Value, Dataset
-from os import path
+from datasets import DatasetDict
 
 # I don't know why this is needed, since it works for others without, but due to the limited time, this is here to stay
 ensure_torch_safe_globals()

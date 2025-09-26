@@ -4,7 +4,7 @@ from datasets import DatasetDict, IterableDataset, IterableDatasetDict, Audio, D
 
 log = utils.get_pylogger(__name__)
 
-class NaiveAsMultiDataModule(BirdSetDataModule):
+class NaiveDataModule(BirdSetDataModule):
 
     @property
     def num_classes(self):
