@@ -26,7 +26,7 @@ class NaiveMultiTaskModule(BaseModule):
         lr_scheduler: Optional[LRSchedulerConfig] = LRSchedulerConfig(),
         metrics_ebird: MultilabelMetricsConfig = MultilabelMetricsConfig(),
         metrics_calltype: None = None,
-                metrics_combined: MetricCollection = MetricCollection(
+        metrics_combined: MetricCollection = MetricCollection(
             [
                 cmAP(num_labels=106),
                 MultilabelAccuracy(num_labels=106),
