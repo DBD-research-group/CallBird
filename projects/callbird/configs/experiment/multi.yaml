@@ -4,7 +4,7 @@ defaults:
   - shared.yaml
 
 module:
-  _target_: projects.callbird.src.module.multitask_module.MultiTaskModule.TODO
+  _target_: projects.callbird.src.module.multitask_module.MultiTaskModule
 
 datamodule:
   _target_: projects.callbird.src.TODO.TODO
