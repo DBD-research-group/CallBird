@@ -22,8 +22,8 @@ class NaiveAsMultiCleanTestDataModule(NaiveAsMultiDataModule):
     def _load_data(self, decode: bool = True) -> DatasetDict:
         dataset = load_test_dataset(self.dataset_config.data_dir)
 
-        blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_naive.txt")
-        dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
+        # blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_naive.txt")
+        # dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
 
         dataset = super()._process_loaded_multitask_data(dataset, decode)
 

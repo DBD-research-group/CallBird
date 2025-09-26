@@ -24,8 +24,8 @@ class NaiveAsMultiCleanTrainDataModule(NaiveAsMultiDataModule):
     def _load_data(self, decode: bool = True) -> DatasetDict:
         dataset = load_train_dataset(self.dataset_config.data_dir)
 
-        blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_naive.txt")
-        dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
+        # blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_naive.txt")
+        # dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
 
         # Set values in "ebird_code" to "ebird_code_and_call"
         # dataset = dataset.map(lambda x: {"ebird_code_and_call": x["ebird_code"]}, batched=True)

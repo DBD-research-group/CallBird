@@ -26,8 +26,8 @@ class MultiTrainDataModule(MultiDataModule):
         # print(f"Unique ebird codes in the filtered dataset: {ebird_code_list}")
         # raise NotImplementedError("This code snippet is for illustration only. Please implement the logic as needed.")
 
-        dataset = dataset.filter(lambda x: x["ebird_code"] == "eurbla")
-        dataset = dataset.filter(lambda x: x["call_type"] == "ac_b (Alarmruf_Bodenfeinde)")
+        # dataset = dataset.filter(lambda x: x["ebird_code"] == "eurbla")
+        # dataset = dataset.filter(lambda x: x["call_type"] == "ac_b (Alarmruf_Bodenfeinde)")
 
         dataset = super()._process_loaded_multitask_data(dataset, decode)
 

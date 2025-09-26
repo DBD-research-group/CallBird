@@ -20,14 +20,6 @@ class MultiDataModule(BirdSetDataModule):
         return len(self.calltype_labels)
     
     def _process_loaded_multitask_data(self, dataset, decode: bool = True):
-        def add_event_columns(example):
-            example["detected_events"] = (example["start_time"], example["end_time"])
-            # TODO: Fix event_cluster value
-            example["event_cluster"] = [0]
-            return example
-
-        dataset = dataset.map(add_event_columns)
-
         if isinstance(dataset, IterableDataset | IterableDatasetDict):
             log.error("Iterable datasets not supported yet.")
             return
