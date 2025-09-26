@@ -5,6 +5,9 @@ defaults:
 
 module:
   _target_: projects.callbird.src.module.naive_multitask_module.NaiveMultiTaskModule
+  metrics_ebird:
+    _target_: birdset.configs.MultilabelMetricsConfig
+    num_labels: 106
 
 datamodule:
   _target_: projects.callbird.src.TODO.TODO

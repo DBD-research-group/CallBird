@@ -31,12 +31,6 @@ module:
     _target_: torch.optim.AdamW
     lr: 5e-4
     weight_decay: 5e-4
-  metrics_ebird:
-    _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: ${module.network.num_classes_ebird}
-  metrics_calltype:
-    _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: ${module.network.num_classes_calltype}
 
 datamodule:
   _target_: projects.callbird.src.TODO.TODO
