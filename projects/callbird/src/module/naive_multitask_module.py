@@ -25,7 +25,6 @@ class NaiveMultiTaskModule(BaseModule):
         optimizer: partial[Type[Optimizer]] = partial(AdamW, lr=1e-5),
         lr_scheduler: Optional[LRSchedulerConfig] = LRSchedulerConfig(),
         metrics_ebird: MultilabelMetricsConfig = MultilabelMetricsConfig(),
-        metrics_calltype: None = None,
         metrics_combined: MetricCollection = MetricCollection(
             [
                 cmAP(num_labels=106),
