@@ -2,10 +2,10 @@ from callbird.src.readUtils import readCommentedList, readLabeledMapping
 from datasets import load_dataset, Features, Value
 from os import path
 
-def load_test_dataset(cache_dir: str | None = None):
-    # A list of classes not present in the train set.
-    blacklist_ebird = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_ebird.txt")
-
+def load_test_dataset(
+        call_type_mapping_file: str,
+        cache_dir: str | None = None
+):
     dataset = load_dataset(
         "csv",
         data_files = "/workspace/oekofor/testset/labels/*.csv",
@@ -26,20 +26,24 @@ def load_test_dataset(cache_dir: str | None = None):
     dataset = dataset.map(lambda x: {"ebird_code": x["ebird_code"] if x["ebird_code"] is not None else ("UNKNOWN" if x["common_name"] == "Bird" else "NA")}) # TODO: Check if NA is an existing code
     dataset = dataset.map(lambda x: {"vocalization_type": x["vocalization_type"] if x["vocalization_type"] is not None else "NA"}) # TODO: Check if NA is an existing code
 
-    # Load the call type mappings
-    calltype_mapping = readLabeledMapping("/workspace/projects/callbird/datastats/call_types_list", "test")
-    dataset = dataset.map(lambda x: {"short_call_type": calltype_mapping.get(x["vocalization_type"], None)}) # Using None to force an error if the vocalization type is not found
-
+    # A list of classes not present in the train set.
+    blacklist_ebird = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_ebird.txt")
     dataset = dataset.filter(lambda x: x["ebird_code"] not in blacklist_ebird)
+
+    # Load the call type mappings
+    calltype_mapping = readLabeledMapping(call_type_mapping_file, "test")
+    dataset = dataset.map(lambda x: {"short_call_type": calltype_mapping.get(x["vocalization_type"], None)}) # Using None to force an error if the vocalization type is not found
 
     # Create naive classes
     dataset = dataset.map(lambda x: { "ebird_code_and_call": f"{x['ebird_code']}_{x['short_call_type']}" })
 
-    # Rename 'audio_filename' to 'filepath' to match what the base class expects
-    dataset = dataset.rename_column("audio_filename", "filepath")
-
     blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_naive.txt")
     dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
+
+    #### TODO: Reduce samples etc.
+
+    # Rename 'audio_filename' to 'filepath' to match what the base class expects
+    dataset = dataset.rename_column("audio_filename", "filepath")
 
     # Setting absolute paths for the audio files
     def update_filepath(example):
