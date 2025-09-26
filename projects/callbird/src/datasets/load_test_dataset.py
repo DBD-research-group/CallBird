@@ -56,4 +56,7 @@ def load_test_dataset(
 
     dataset = dataset.map(update_filepath)
 
+    # Create detected_events from start_time and end_time
+    dataset = dataset.map(lambda x: {"detected_events": [x["start_time"], x["end_time"]]})
+
     return dataset
