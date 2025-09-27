@@ -68,4 +68,4 @@ trainer:
   min_epochs: 1
   max_epochs: 20
   devices: [2]
-  deterministic: true
+  deterministic: false
