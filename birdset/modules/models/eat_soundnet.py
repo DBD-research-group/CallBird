@@ -9,6 +9,9 @@ from dataclasses import dataclass, field
 import warnings
 import datasets
 
+from birdset.configs import module_configs
+import sys
+
 log = pylogger.get_pylogger(__name__)
 
 
@@ -244,7 +247,11 @@ class SoundNet(nn.Module):
             )
 
     def load_state_dict_from_file(self, file_path, model_name="model"):
-        state_dict = torch.load(file_path, map_location=self.device)["state_dict"]
+        sys.modules["birdset.modules.metrics.multilabel"] = module_configs
+        try:
+            state_dict = torch.load(file_path, weights_only=False, map_location=self.device)["state_dict"]
+        finally:
+            del sys.modules["birdset.modules.metrics.multilabel"]
         # select only models where the key starts with `model.` + model_name + `.`
         state_dict = {
             key: weight

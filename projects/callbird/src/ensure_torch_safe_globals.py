@@ -2,6 +2,7 @@ from collections import OrderedDict, defaultdict
 from functools import partial
 from typing import Any
 
+import numpy
 from omegaconf import AnyNode, DictConfig, ListConfig
 from omegaconf.base import ContainerMetadata, Metadata
 from torch import FloatStorage, LongStorage, device
@@ -47,13 +48,29 @@ from projects.callbird.src.models.ConvNextMultiLayers import ConvNextMultiLayers
 from callbird.src.models.ConvNextSingleLayer import ConvNextSingleLayer, SingleLayerHead as Sing
 from torchmetrics.classification.accuracy import MultilabelAccuracy
 from torchmetrics.classification.exact_match import MultilabelExactMatch
+from birdset.modules.models.eat_soundnet import SoundNet, Down, AADownsample, ResBlock1dTF, TAggregate
+from callbird.src.models.EATSingleLayer import EATSingleLayer, SingleLayerHead as SingEAT
+from torch.nn.modules.padding import ReflectionPad1d
+from torch.nn.modules.conv import Conv1d
+from torch.nn.modules.batchnorm import BatchNorm1d
+from torch.nn.modules.activation import LeakyReLU, MultiheadAttention
+from torch.nn.modules.transformer import TransformerEncoder, TransformerEncoderLayer
+from torch.nn.modules.linear import NonDynamicallyQuantizableLinear
+from torch.nn.modules.dropout import Dropout
+from numpy.core.multiarray import scalar
+from birdset.modules.base_module import LRSchedulerConfig as LRSchedulerConfigBase
+
 
 def ensure_torch_safe_globals():
+    add_safe_globals([numpy.dtype, numpy.dtypes.Int64DType, LRSchedulerConfigBase])
+    add_safe_globals([scalar])
     # Add DictConfig to the list of trusted types for torch.load
     add_safe_globals(
         [
             getattr,
-            Sing, ConvNextSingleLayer, MultilabelAccuracy, MultilabelExactMatch,
+            SoundNet, EATSingleLayer, SingEAT, ReflectionPad1d, Conv1d, BatchNorm1d, LeakyReLU, Down, AADownsample, ResBlock1dTF, TAggregate,
+            TransformerEncoder, TransformerEncoderLayer, MultiheadAttention, NonDynamicallyQuantizableLinear,
+            Sing, ConvNextSingleLayer, MultilabelAccuracy, MultilabelExactMatch, Dropout,
             dict,
             defaultdict,
             AdamW,

@@ -190,5 +190,6 @@ settings.json
 
 models/
 !projects/callbird/src/models/
+!projects/callbird/src/modules/models/
 oekofor/
 *.ckpt

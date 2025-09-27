@@ -26,7 +26,7 @@ module:
   _target_: projects.callbird.src.module.multitask_module.TODO
   network:
     torch_compile: False
-    sample_rate: 28000
+    sample_rate: 22050
   optimizer:
     _target_: torch.optim.AdamW
     lr: 5e-4
