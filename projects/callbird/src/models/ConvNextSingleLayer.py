@@ -35,7 +35,7 @@ class ConvNextSingleLayer(nn.Module):
             num_classes=9736,
             num_channels=1,
             checkpoint= "DBD-research-group/ConvNeXT-Base-BirdSet-XCL" if local_checkpoint is None else None,
-            local_checkpoint=local_checkpoint,
+            local_checkpoint=None,
             cache_dir=None,
             pretrain_info=None
         )
@@ -59,7 +59,7 @@ class ConvNextSingleLayer(nn.Module):
         if checkpoint_path is None:
             raise Error("Checkpoint path must be provided to load model weights.")
 
-        state_dict = torch.load(checkpoint_path)["state_dict"]
+        state_dict = torch.load(checkpoint_path, weights_only=False)["state_dict"]
         
         # Adjust keys if they are prefixed (e.g., by a LightningModule)
         adjusted_state_dict = {}

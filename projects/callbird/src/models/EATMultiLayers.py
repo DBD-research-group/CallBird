@@ -96,7 +96,7 @@ class EATMultiLayers(nn.Module):
         """
         super().__init__()
 
-        local_checkpoint = kwargs.pop("local_checkpoint", None)
+        # local_checkpoint = kwargs.pop("local_checkpoint", None)
 
         self.eat = SoundNet(
             nf = nf,
@@ -145,7 +145,7 @@ class EATMultiLayers(nn.Module):
         Args:
             checkpoint_path (str): Path to the checkpoint file.
         """
-        state_dict = torch.load(checkpoint_path)["state_dict"]
+        state_dict = torch.load(checkpoint_path, weights_only=False)["state_dict"]
         
         # Adjust keys if they are prefixed (e.g., by a LightningModule)
         adjusted_state_dict = {}
