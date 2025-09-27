@@ -20,21 +20,25 @@ from torchmetrics.classification import MultilabelAccuracy, MultilabelExactMatch
 class NaiveMultiTaskModule(BaseModule):
     def __init__(
         self,
+        num_combined_classes: int,
         network: NetworkConfig = NetworkConfig(),
         loss: _Loss = BCEWithLogitsLoss(),
         optimizer: partial[Type[Optimizer]] = partial(AdamW, lr=1e-5),
         lr_scheduler: Optional[LRSchedulerConfig] = LRSchedulerConfig(),
         metrics_ebird: MultilabelMetricsConfig = MultilabelMetricsConfig(),
-        metrics_combined: MetricCollection = MetricCollection(
-            [
-                cmAP(num_labels=106),
-                MultilabelAccuracy(num_labels=106),
-                MultilabelExactMatch(num_labels=106),
-            ]
-        ),
+        metrics_combined: MetricCollection | None = None,
         logging_params: LoggingParamsConfig = LoggingParamsConfig(),
         **kwargs,
     ):
+        if metrics_combined is None:
+            metrics_combined = MetricCollection(
+            [
+                cmAP(num_labels=num_combined_classes),
+                MultilabelAccuracy(num_labels=num_combined_classes),
+                MultilabelExactMatch(num_labels=num_combined_classes),
+            ]
+        )
+
         # Remove the unexpected argument before calling the parent constructor
         kwargs.pop("prediction_table", None)
         # We are handling metrics ourselves, so remove it before calling super

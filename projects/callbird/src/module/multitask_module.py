@@ -21,22 +21,28 @@ from torchmetrics.classification import MultilabelAccuracy, MultilabelExactMatch
 class MultiTaskModule(BaseModule):
     def __init__(
         self,
+        num_combined_classes: int,
         network: NetworkConfig = NetworkConfig(),
         loss: _Loss = BCEWithLogitsLoss(),
         optimizer: partial[Type[Optimizer]] = partial(AdamW, lr=1e-5),
         lr_scheduler: Optional[LRSchedulerConfig] = LRSchedulerConfig(),
         metrics_ebird: MultilabelMetricsConfig = MultilabelMetricsConfig(),
         metrics_calltype: MultilabelMetricsConfig = MultilabelMetricsConfig(),
-        metrics_combined: MetricCollection = MetricCollection(
-            [
-                cmAP(num_labels=106),
-                MultilabelAccuracy(num_labels=106),
-                MultilabelExactMatch(num_labels=106),
-            ]
-        ),
+        metrics_combined: MetricCollection | None = None,
         logging_params: LoggingParamsConfig = LoggingParamsConfig(),
         **kwargs,
     ):
+        self.num_combined_classes = num_combined_classes
+        
+        if metrics_combined is None:
+            metrics_combined = MetricCollection(
+            [
+                cmAP(num_labels=num_combined_classes),
+                MultilabelAccuracy(num_labels=num_combined_classes),
+                MultilabelExactMatch(num_labels=num_combined_classes),
+            ]
+        )
+
         # Remove the unexpected argument before calling the parent constructor
         kwargs.pop("prediction_table", None)
         # We are handling metrics ourselves, so remove it before calling super
@@ -99,7 +105,7 @@ class MultiTaskModule(BaseModule):
         logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
         targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
 
-        pad_size = 106 - logits_combined.shape[1]
+        pad_size = self.num_combined_classes - logits_combined.shape[1]
         logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
         targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
 
@@ -121,7 +127,7 @@ class MultiTaskModule(BaseModule):
         logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
         targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
 
-        pad_size = 106 - logits_combined.shape[1]
+        pad_size = self.num_combined_classes - logits_combined.shape[1]
         logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
         targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
         
@@ -143,7 +149,7 @@ class MultiTaskModule(BaseModule):
         logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
         targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
 
-        pad_size = 106 - logits_combined.shape[1]
+        pad_size = self.num_combined_classes - logits_combined.shape[1]
         logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
         targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
 

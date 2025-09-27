@@ -5,9 +5,10 @@ defaults:
 
 module:
   _target_: projects.callbird.src.module.naive_multitask_module.NaiveMultiTaskModule
+  num_combined_classes: ${module.network.num_combined_classes}
   metrics_ebird:
     _target_: birdset.configs.MultilabelMetricsConfig
-    num_labels: 106
+    num_labels: ${module.network.num_combined_classes}
 
 datamodule:
   _target_: projects.callbird.src.TODO.TODO

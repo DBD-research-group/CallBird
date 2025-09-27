@@ -2,9 +2,42 @@ from birdset import utils
 from birdset.datamodule import BirdSetDataModule
 from datasets import DatasetDict, IterableDataset, IterableDatasetDict, Audio, Dataset
 
+from datasets import DatasetDict
+
+from birdset import utils
+from birdset.datamodule.components.transforms import BirdSetTransformsWrapper
+from birdset.datamodule.components.event_mapping import XCEventMapping
+from birdset.configs import DatasetConfig, LoadersConfig
+
 log = utils.get_pylogger(__name__)
 
 class MultiDataModule(BirdSetDataModule):
+
+    def __init__(
+        self,
+        calltype_map: str,
+        filter_naive: bool,
+        unknown_ebird_code: str,
+        dataset: DatasetConfig = DatasetConfig(
+            data_dir="data_birdset/HSN",
+            hf_path="DBD-research-group/BirdSet",
+            hf_name="HSN",
+            n_workers=3,
+            val_split=0.2,
+            task="multilabel",
+            classlimit=500,
+            eventlimit=5,
+            sample_rate=32000,
+        ),
+        loaders: LoadersConfig = LoadersConfig(),
+        transforms: BirdSetTransformsWrapper = BirdSetTransformsWrapper(),
+        mapper: XCEventMapping = XCEventMapping(),
+        weightsampler_column_name: str = "labels",
+    ):
+        super().__init__(dataset, loaders, transforms, mapper, weightsampler_column_name)
+        self.calltype_map = calltype_map
+        self.filter_naive = filter_naive
+        self.unknown_ebird_code = unknown_ebird_code
 
     @property
     def num_classes(self):

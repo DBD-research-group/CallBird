@@ -4,3 +4,7 @@ defaults:
   - multi_same_classes_convnext.yaml
 
 train: True
+
+datamodule:
+  _target_: projects.callbird.src.datasets.multi.MultiTrainDataModule.MultiTrainDataModule
+  filter_naive: /workspace/projects/callbird/blacklists/same_space_train.txt

@@ -15,7 +15,11 @@ class MultiTrainDataModule(MultiDataModule):
     """
     
     def _load_data(self, decode: bool = True) -> DatasetDict:
-        dataset = load_train_dataset(self.dataset_config.data_dir)
+        dataset = load_train_dataset(
+            call_type_mapping_file=self.calltype_map,
+            cache_dir=self.dataset_config.data_dir,
+            filter_naive=self.filter_naive,
+        )
 
         # list all birds that have "call_type" "ac_b (Alarmruf_Bodenfeinde)"
         # dataset = dataset.filter(lambda x: x["call_type"] == "ac_b (Alarmruf_Bodenfeinde)")

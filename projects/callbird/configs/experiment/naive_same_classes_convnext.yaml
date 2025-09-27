@@ -6,10 +6,11 @@ defaults:
 module:
   network:
     model:
-      _target_: projects.callbird.src.models.ConvNextMultiLayers.ConvNextMultiLayers
+      _target_: projects.callbird.src.models.ConvNextSingleLayer.ConvNextSingleLayer
       pretrain_info: null
       freeze_backbone: True
       variant: three
+      num_combined_classes: ${module.network.num_combined_classes}
 
 logger:
   wandb:

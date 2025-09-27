@@ -5,6 +5,7 @@ from os import path
 def load_train_dataset(
         call_type_mapping_file: str,
         cache_dir: str | None,
+        filter_naive: str | None,
 ):
     dataset = load_dataset(
         "csv",
@@ -43,8 +44,9 @@ def load_train_dataset(
     # Create naive classes
     dataset = dataset.map(lambda x: { "ebird_code_and_call": f"{x['ebird_code']}_{x['short_call_type']}" })
 
-    blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_naive.txt")
-    dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
+    if filter_naive != None:
+        blacklist_naive = readCommentedList(filter_naive)
+        dataset = dataset.filter(lambda x: x["ebird_code_and_call"] not in blacklist_naive)
 
     #### TODO: Reduce samples etc.
 

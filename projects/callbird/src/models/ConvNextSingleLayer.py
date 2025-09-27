@@ -16,11 +16,11 @@ class SingleLayerHead(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.layers(x)
 
-class ConvNextSameNoLayers(nn.Module):
+class ConvNextSingleLayer(nn.Module):
 
-    def __init__(self, **kwargs):
+    def __init__(self, num_combined_classes: int, **kwargs):
         """
-        Initializes the ConvNextNoLayers model for two tasks.
+        Initializes the ConvNextSingleLayer model for two tasks.
 
         Args:
             num_classes (int): The number of output classes for each task.
@@ -32,7 +32,7 @@ class ConvNextSameNoLayers(nn.Module):
         local_checkpoint = kwargs.pop("local_checkpoint", None)
 
         self.convnext = ConvNextClassifier(
-            num_classes=106,
+            num_classes=num_combined_classes,
             num_channels=1,
             checkpoint= "DBD-research-group/ConvNeXT-Base-BirdSet-XCL" if local_checkpoint is None else None,
             local_checkpoint=local_checkpoint,
@@ -40,8 +40,10 @@ class ConvNextSameNoLayers(nn.Module):
             pretrain_info=None
         )
 
-        self.ebird_head = SingleLayerHead(106, 106)
-        self.load_from_checkpoint(local_checkpoint)
+        self.ebird_head = SingleLayerHead(num_combined_classes, num_combined_classes)
+        
+        if local_checkpoint is not None:
+            self.load_from_checkpoint(local_checkpoint)
 
         # self.freeze_model_backbone()
 

@@ -60,7 +60,14 @@ log = utils.get_pylogger(__name__)
 
 class ConvNextMultiLayers(nn.Module):
 
-    def __init__(self, freeze_backbone: bool = False, variant: str = "three", **kwargs):
+    def __init__(
+        self,
+        freeze_backbone: bool,
+        variant: str,
+        num_classes_calltype: int,
+        num_classes_ebird: int,
+        **kwargs
+    ):
         """
         Initializes the ConvNextMultiLayers model for two tasks.
 
@@ -92,14 +99,14 @@ class ConvNextMultiLayers(nn.Module):
         self.convnext.model.classifier = nn.Identity()
 
         if variant == "single":
-            self.ebird_head = SingleLayerHead(in_features, 54)
-            self.calltype_head = SingleLayerHead(in_features, 7)
+            self.ebird_head = SingleLayerHead(in_features, num_classes_ebird)
+            self.calltype_head = SingleLayerHead(in_features, num_classes_calltype)
         elif variant == "three":
-            self.ebird_head = ThreeLayerHead(in_features, 54)
-            self.calltype_head = ThreeLayerHead(in_features, 7)
+            self.ebird_head = ThreeLayerHead(in_features, num_classes_ebird)
+            self.calltype_head = ThreeLayerHead(in_features, num_classes_calltype)
         elif variant == "ten":
-            self.ebird_head = TenLayerHead(in_features, 54)
-            self.calltype_head = TenLayerHead(in_features, 7)
+            self.ebird_head = TenLayerHead(in_features, num_classes_ebird)
+            self.calltype_head = TenLayerHead(in_features, num_classes_calltype)
         else:
             raise ValueError(f"Unknown variant: {variant}")
 

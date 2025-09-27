@@ -1,0 +1,32 @@
+@train
+f (Flugruf) : flight
+c (Kontaktruf) : contact
+s (Gesang) : song
+t (Trommeln) : drumming
+b (Bettelruf) : other
+e (Erregungsruf) : excitement
+ic (Interaktionsrufe) : other
+ac (Alarmruf) : alarm
+s2 (Zweitgesang) : sub_song
+wb (Fluegelschlag) : NA
+nfc (Nachtzugruf) : other
+rs (Rufe am Schlafplatz) : other
+ac_b (Alarmruf_Bodenfeinde) : alarm_ground
+ac_f (Alarmruf Luftfeinde) : alarm_air
+NA : NA
+
+@test
+song : song
+contact call : contact
+flight call : flight
+something : NA
+drumming : drumming
+alarm call : alarm
+vocal : NA
+ground alarm call : alarm_ground
+call : NA
+whistle : other
+air alarm call : alarm_air
+excitement call : excitement
+sub song : sub_song
+NA : NA

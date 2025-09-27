@@ -10,6 +10,8 @@ module:
       pretrain_info: null
       freeze_backbone: True
       variant: three
+      num_classes_calltype: ${module.network.num_classes_calltype}
+      num_classes_ebird: ${module.network.num_classes_ebird}
 
 logger:
   wandb:

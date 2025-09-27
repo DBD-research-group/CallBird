@@ -5,6 +5,7 @@ defaults:
 
 module:
   _target_: projects.callbird.src.module.multitask_module.MultiTaskModule
+  num_combined_classes: ${module.network.num_combined_classes}
   metrics_ebird:
     _target_: birdset.configs.MultilabelMetricsConfig
     num_labels: ${module.network.num_classes_ebird}

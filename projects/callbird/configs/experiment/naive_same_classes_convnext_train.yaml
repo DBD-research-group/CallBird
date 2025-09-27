@@ -4,3 +4,7 @@ defaults:
   - naive_same_classes_convnext.yaml
 
 train: True
+
+datamodule:
+  _target_: projects.callbird.src.datasets.naive.NaiveTrainDataModule.NaiveTrainDataModule
+  filter_naive: /workspace/projects/callbird/blacklists/same_space_train.txt
