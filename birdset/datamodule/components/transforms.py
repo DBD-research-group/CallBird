@@ -439,17 +439,20 @@ class BirdSetTransformsWrapper(BaseTransforms):
                 # 0 vector!
                 masked_vector = vector[mask == 1]
 
-                # check if masked vector is empty
-                if masked_vector.size == 0:
-                    normed_vector = np.full(vector.shape, padding_value)
-                    #!TODO: check 0 length soundscape files
+                # If the masked (un-padded) part is empty, fill entire vector with padding_value
+                # This can happen for completely padded / zero-length decoded segments.
+                if masked_vector.numel() == 0:  # torch.Tensor safe check
+                    normed_vector = torch.full_like(vector, padding_value)
+                    normed_input_values.append(normed_vector)
+                    continue
 
                 min_val = masked_vector.min()
                 max_val = masked_vector.max()
 
-                normed_vector = (
-                    2 * ((vector - min_val) / (max_val - min_val + 1e-7)) - 1
-                )
+                # guard against numerical issues or constant vectors
+                denom = (max_val - min_val).clamp(min=1e-7)
+                normed_vector = 2 * ((vector - min_val) / denom) - 1
+                # apply padding to masked-out (originally padded) positions
                 normed_vector[mask == 0] = padding_value
 
                 normed_input_values.append(normed_vector)
