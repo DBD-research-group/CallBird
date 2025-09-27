@@ -1,0 +1,13 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - naive_same_classes_eat_train.yaml
+
+module:
+  network:
+    model:
+      freeze_backbone: False
+      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-09-XXXX/callback_checkpoints/last.ckpt
+
+trainer:
+  devices: [3]
