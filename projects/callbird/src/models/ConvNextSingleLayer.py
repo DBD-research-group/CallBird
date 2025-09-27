@@ -18,7 +18,7 @@ class SingleLayerHead(nn.Module):
 
 class ConvNextSingleLayer(nn.Module):
 
-    def __init__(self, num_combined_classes: int, **kwargs):
+    def __init__(self, num_combined_classes: int, freeze_backbone: bool, **kwargs):
         """
         Initializes the ConvNextSingleLayer model for two tasks.
 
@@ -45,7 +45,8 @@ class ConvNextSingleLayer(nn.Module):
         if local_checkpoint is not None:
             self.load_from_checkpoint(local_checkpoint)
 
-        # self.freeze_model_backbone()
+        if freeze_backbone:
+            self.freeze_model_backbone()
 
     def load_from_checkpoint(self, checkpoint_path: str):
         """
