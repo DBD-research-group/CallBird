@@ -62,7 +62,7 @@ callbacks:
   model_checkpoint:
     save_last: True
     every_n_epochs: 5
-    monitor: val/ebird_BCEWithLogitsLoss
+    monitor: val/ebird_cmAP_best
 
 trainer:
   min_epochs: 1
