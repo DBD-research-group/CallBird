@@ -19,6 +19,7 @@ class MultiTrainDataModule(MultiDataModule):
             call_type_mapping_file=self.calltype_map,
             cache_dir=self.dataset_config.data_dir,
             filter_naive=self.filter_naive,
+            limit_samples=True,
         )
 
         # list all birds that have "call_type" "ac_b (Alarmruf_Bodenfeinde)"

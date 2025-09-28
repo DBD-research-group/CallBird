@@ -6,6 +6,7 @@ def load_train_dataset(
         call_type_mapping_file: str,
         cache_dir: str | None,
         filter_naive: str | None,
+        limit_samples: bool | None,
 ):
     dataset = load_dataset(
         "csv",
@@ -31,11 +32,24 @@ def load_train_dataset(
     blacklist_ebird = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_ebird.txt")
     dataset = dataset.filter(lambda x: x["ebird_code"] not in blacklist_ebird)
 
-    # Limit the number of "NA" ebird_code entries to 5000
-    # na_dataset = dataset.filter(lambda x: x["ebird_code"] == "NA")
-    # other_dataset = dataset.filter(lambda x: x["ebird_code"] != "NA")
-    # na_subset = na_dataset['train'].shuffle(seed=42).select(range(min(5000, len(na_dataset['train']))))
-    # dataset['train'] = concatenate_datasets([other_dataset['train'], na_subset])
+    if limit_samples != None:
+        # Limit the number of "NA" ebird_code entries to 6000
+        na_dataset = dataset.filter(lambda x: x["ebird_code"] == "NA")
+        other_dataset = dataset.filter(lambda x: x["ebird_code"] != "NA")
+        na_subset = na_dataset['train'].shuffle(seed=42).select(range(min(6000, len(na_dataset['train']))))
+        dataset['train'] = concatenate_datasets([other_dataset['train'], na_subset])
+
+        # Limit the number of "grswoo" ebird_code entries to 6000
+        na_dataset = dataset.filter(lambda x: x["ebird_code"] == "grswoo")
+        other_dataset = dataset.filter(lambda x: x["ebird_code"] != "grswoo")
+        na_subset = na_dataset['train'].shuffle(seed=42).select(range(min(6000, len(na_dataset['train']))))
+        dataset['train'] = concatenate_datasets([other_dataset['train'], na_subset])
+
+        # Limit the number of "s (Gesang)" call_type entries to 20_000
+        na_dataset = dataset.filter(lambda x: x["call_type"] == "s (Gesang)")
+        other_dataset = dataset.filter(lambda x: x["call_type"] != "s (Gesang)")
+        na_subset = na_dataset['train'].shuffle(seed=42).select(range(min(20_000, len(na_dataset['train']))))
+        dataset['train'] = concatenate_datasets([other_dataset['train'], na_subset])
 
     # Load the call type mappings
     calltype_mapping = readLabeledMapping(call_type_mapping_file, "train")
