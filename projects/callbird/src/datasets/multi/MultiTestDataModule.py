@@ -17,7 +17,7 @@ class MultiTestDataModule(MultiDataModule):
     def _load_data(self, decode: bool = True) -> DatasetDict:
         dataset = load_test_dataset(
             call_type_mapping_file=self.calltype_map,
-            cache_dir=self.dataset_config.data_dir,
+            cache_dir=None,
             filter_naive=self.filter_naive,
             unknown_ebird_code=self.unknown_ebird_code
         )
