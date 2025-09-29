@@ -19,6 +19,7 @@ class NaiveDataModule(BirdSetDataModule):
         filter_naive: bool,
         unknown_ebird_code: str,
         num_combined_classes: int,
+        limit_samples: bool,
         filter_unspecified: bool,
         dataset: DatasetConfig = DatasetConfig(
             data_dir="data_birdset/HSN",
@@ -42,6 +43,7 @@ class NaiveDataModule(BirdSetDataModule):
         self.unknown_ebird_code = unknown_ebird_code
         self.num_combined_classes = num_combined_classes
         self.filter_unspecified = filter_unspecified
+        self.limit_samples = limit_samples
 
     @property
     def num_classes(self):

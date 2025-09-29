@@ -19,7 +19,7 @@ class NaiveTrainDataModule(NaiveDataModule):
             call_type_mapping_file=self.calltype_map,
             cache_dir=self.dataset_config.data_dir,
             filter_naive=self.filter_naive,
-            limit_samples=True,
+            limit_samples=self.limit_samples,
         )
 
         # blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_naive.txt")
