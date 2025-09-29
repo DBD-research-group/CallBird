@@ -34,6 +34,7 @@ module:
 
 datamodule:
   _target_: projects.callbird.src.TODO.TODO
+  num_combined_classes: ${module.network.num_combined_classes}
   dataset:
     hf_path: mai-leh/loading-testing
     hf_name: callbird
