@@ -1,0 +1,20 @@
+# eBird codes not present in the train set
+cowpig1_drumming
+dunnoc1_filter
+eursta_filter
+woowar_other
+norlap_filter
+sonthr1_filter
+coatit2_filter
+eurrob1_filter
+goldcr1_filter
+tawowl1_filter
+eurbul_filter
+blutit_filter
+stodov1_flight
+hawfin_filter
+yellow2_filter
+shttre1_filter
+wiltit1_filter
+eutdov_filter
+grswoo_filter
