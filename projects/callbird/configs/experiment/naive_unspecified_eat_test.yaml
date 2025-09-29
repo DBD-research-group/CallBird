@@ -1,0 +1,19 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - naive_unspecified_eat.yaml
+
+test: True
+
+module:
+  network:
+    model:
+      freeze_backbone: False
+      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-09-27_211913/callback_checkpoints/convnext_callbird_09.ckpt
+
+datamodule:
+  _target_: projects.callbird.src.datasets.naive.NaiveTestDataModule.NaiveTestDataModule
+  filter_naive: /workspace/projects/callbird/blacklists/unspecified_test.txt
+
+trainer:
+  devices: [3]

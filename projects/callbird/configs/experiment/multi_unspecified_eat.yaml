@@ -1,0 +1,29 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - multi_unspecified.yaml
+
+module:
+  network:
+    model:
+      _target_: projects.callbird.src.models.EATMultiLayers.EATMultiLayers
+      pretrain_info: null
+      freeze_backbone: True
+      variant: three
+      num_combined_classes: ${module.network.num_combined_classes}
+      num_classes_calltype: ${module.network.num_classes_calltype}
+      num_classes_ebird: ${module.network.num_classes_ebird}
+      nf: 16
+      seq_len: 110250
+      embed_dim: 128
+      n_layers: 4
+      nhead: 8
+      factors: [4, 4, 4, 4]
+      dim_feedforward: 512
+    model_type: waveform
+    normalize_spectrogram: False
+    normalize_waveform: instance_min_max
+
+logger:
+  wandb:
+    version: callbird_multi_unspecified_eat_${start_time} 
