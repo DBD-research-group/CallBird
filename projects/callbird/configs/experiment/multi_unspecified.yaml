@@ -13,6 +13,7 @@ datamodule:
   calltype_map: /workspace/projects/callbird/call_type_mappings/unspecified_map
   filter_naive: False
   unknown_ebird_code: NA
+  filter_unspecified: True
 
 logger:
   wandb:

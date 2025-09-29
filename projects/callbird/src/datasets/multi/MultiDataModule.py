@@ -18,6 +18,8 @@ class MultiDataModule(BirdSetDataModule):
         calltype_map: str,
         filter_naive: bool,
         unknown_ebird_code: str,
+        num_combined_classes: int,
+        filter_unspecified: bool,
         dataset: DatasetConfig = DatasetConfig(
             data_dir="data_birdset/HSN",
             hf_path="DBD-research-group/BirdSet",
@@ -38,6 +40,7 @@ class MultiDataModule(BirdSetDataModule):
         self.calltype_map = calltype_map
         self.filter_naive = filter_naive
         self.unknown_ebird_code = unknown_ebird_code
+        self.filter_unspecified = filter_unspecified
 
     @property
     def num_classes(self):

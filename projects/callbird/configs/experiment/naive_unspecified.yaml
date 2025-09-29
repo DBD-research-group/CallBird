@@ -11,6 +11,7 @@ datamodule:
   calltype_map: /workspace/projects/callbird/call_type_mappings/unspecified_map
   unknown_ebird_code: NA
   num_combined_classes: ${module.network.num_combined_classes}
+  filter_unspecified: True
 
 logger:
   wandb:

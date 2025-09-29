@@ -19,7 +19,8 @@ class NaiveTestDataModule(NaiveDataModule):
             call_type_mapping_file=self.calltype_map,
             cache_dir=self.dataset_config.data_dir,
             filter_naive=self.filter_naive,
-            unknown_ebird_code=self.unknown_ebird_code
+            unknown_ebird_code=self.unknown_ebird_code,
+            filter_unspecified=self.filter_unspecified
         )
 
         # blacklist_naive = readCommentedList("/workspace/projects/callbird/datastats/test/blacklist_naive.txt")

@@ -19,7 +19,8 @@ class MultiTestDataModule(MultiDataModule):
             call_type_mapping_file=self.calltype_map,
             cache_dir=None,
             filter_naive=self.filter_naive,
-            unknown_ebird_code=self.unknown_ebird_code
+            unknown_ebird_code=self.unknown_ebird_code,
+            filter_unspecified=self.filter_unspecified
         )
 
         dataset = super()._process_loaded_multitask_data(dataset, decode)

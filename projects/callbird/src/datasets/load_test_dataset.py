@@ -7,6 +7,7 @@ def load_test_dataset(
         cache_dir: str | None,
         filter_naive: str | None,
         unknown_ebird_code: str,
+        filter_unspecified: bool,
 ):
     dataset = load_dataset(
         "csv",
@@ -48,7 +49,8 @@ def load_test_dataset(
 
     #### TODO: Reduce samples etc.
 
-    dataset = dataset.filter(lambda x: x["common_name"] != "Bird")
+    if filter_unspecified:
+        dataset = dataset.filter(lambda x: x["common_name"] != "Bird")
 
     # Rename 'audio_filename' to 'filepath' to match what the base class expects
     dataset = dataset.rename_column("audio_filename", "filepath")
