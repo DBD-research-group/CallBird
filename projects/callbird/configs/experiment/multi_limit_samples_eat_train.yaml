@@ -1,0 +1,10 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - multi_same_classes_eat_train.yaml
+
+datamodule:
+  limit_samples: True
+
+trainer:
+  devices: [3]

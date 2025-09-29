@@ -14,6 +14,7 @@ datamodule:
   filter_naive: False
   unknown_ebird_code: NA
   filter_unspecified: False
+  limit_samples: False
 
 logger:
   wandb:

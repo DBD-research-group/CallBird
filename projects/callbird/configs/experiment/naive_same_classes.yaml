@@ -12,6 +12,7 @@ datamodule:
   unknown_ebird_code: NA
   num_combined_classes: ${module.network.num_combined_classes}
   filter_unspecified: False
+  limit_samples: False
 
 logger:
   wandb:
