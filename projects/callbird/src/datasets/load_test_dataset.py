@@ -48,6 +48,8 @@ def load_test_dataset(
 
     #### TODO: Reduce samples etc.
 
+    dataset = dataset.filter(lambda x: x["common_name"] != "Bird")
+
     # Rename 'audio_filename' to 'filepath' to match what the base class expects
     dataset = dataset.rename_column("audio_filename", "filepath")
 
