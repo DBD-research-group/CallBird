@@ -68,6 +68,9 @@ class NaiveDataModule(BirdSetDataModule):
 
         self.ebird_labels = sorted(list(ebird_labels))
 
+        if (len(self.ebird_labels) != self.num_combined_classes):
+            raise ValueError(f"Number of combined classes {len(self.ebird_labels)} does not match expected {self.num_combined_classes}.")
+
         ebird_label_to_id = {lbl: i for i, lbl in enumerate(self.ebird_labels)}
 
         def label_to_id_fn(batch):

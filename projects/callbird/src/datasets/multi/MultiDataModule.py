@@ -86,6 +86,9 @@ class MultiDataModule(BirdSetDataModule):
         self.calltype_labels = sorted(list(calltype_labels))
         self.combined_labels = sorted(list(combined_labels))
 
+        if (len(self.combined_labels) != self.num_combined_classes):
+            raise ValueError(f"Number of combined classes {len(self.combined_labels)} does not match expected {self.num_combined_classes}.")
+
         ebird_label_to_id = {lbl: i for i, lbl in enumerate(self.ebird_labels)}
         calltype_label_to_id = {lbl: i for i, lbl in enumerate(self.calltype_labels)}
         combined_label_to_id = {lbl: i for i, lbl in enumerate(self.combined_labels)}
