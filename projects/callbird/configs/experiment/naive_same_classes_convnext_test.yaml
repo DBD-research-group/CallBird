@@ -9,8 +9,8 @@ module:
   network:
     model:
       freeze_backbone: False
-      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-09-27_165757/callback_checkpoints/last.ckpt
+      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-09-30_135708/callback_checkpoints/last.ckpt
 
 datamodule:
-  _target_: projects.callbird.src.datasets.multi.MultiTestDataModule.MultiTestDataModule
+  _target_: projects.callbird.src.datasets.naive.NaiveTestDataModule.NaiveTestDataModule
   filter_naive: /workspace/projects/callbird/blacklists/same_space_test.txt

@@ -41,6 +41,7 @@ class MultiDataModule(BirdSetDataModule):
         self.calltype_map = calltype_map
         self.filter_naive = filter_naive
         self.unknown_ebird_code = unknown_ebird_code
+        self.num_combined_classes = num_combined_classes
         self.filter_unspecified = filter_unspecified
         self.limit_samples = limit_samples
 
@@ -67,22 +68,27 @@ class MultiDataModule(BirdSetDataModule):
         def add_multilabel_column(example):
             example["ebird_code_multilabel"] = example["ebird_code"]
             example["call_type_multilabel"] = example["short_call_type"]
+            example["combined_multilabel"] = example["ebird_code_and_call"]
             return example
         
         dataset = dataset.map(add_multilabel_column)
 
         ebird_labels = set()
         calltype_labels = set()
+        combined_labels = set()
 
         for split in dataset.keys():
             ebird_labels.update(dataset[split]["ebird_code"])
             calltype_labels.update(dataset[split]["short_call_type"])
+            combined_labels.update(dataset[split]["ebird_code_and_call"])
 
         self.ebird_labels = sorted(list(ebird_labels))
         self.calltype_labels = sorted(list(calltype_labels))
+        self.combined_labels = sorted(list(combined_labels))
 
         ebird_label_to_id = {lbl: i for i, lbl in enumerate(self.ebird_labels)}
         calltype_label_to_id = {lbl: i for i, lbl in enumerate(self.calltype_labels)}
+        combined_label_to_id = {lbl: i for i, lbl in enumerate(self.combined_labels)}
 
         def label_to_id_fn(batch):
             for i in range(len(batch["ebird_code_multilabel"])):
@@ -90,6 +96,9 @@ class MultiDataModule(BirdSetDataModule):
 
             for i in range(len(batch["call_type_multilabel"])):
                 batch["call_type_multilabel"][i] = calltype_label_to_id[batch["call_type_multilabel"][i]]
+
+            for i in range(len(batch["combined_multilabel"])):
+                batch["combined_multilabel"][i] = combined_label_to_id[batch["combined_multilabel"][i]]
 
             return batch
 
@@ -163,9 +172,21 @@ class MultiDataModule(BirdSetDataModule):
                     num_proc=self.dataset_config.n_workers,
                     desc=f"One-hot-encoding calltype labels for {split}.",
                 )
+                dataset[split] = dataset[split].map(
+                    self._classes_one_hot,
+                    fn_kwargs={
+                        "label_column_name": "combined_multilabel",
+                        "num_classes": self.num_combined_classes
+                    },
+                    batched=True,
+                    batch_size=300,
+                    num_proc=self.dataset_config.n_workers,
+                    desc=f"One-hot-encoding combined labels for {split}.",
+                )
 
             dataset = dataset.rename_column("ebird_code_multilabel", "labels_ebird")
             dataset = dataset.rename_column("call_type_multilabel", "labels_calltype")
+            dataset = dataset.rename_column("combined_multilabel", "labels_combined")
 
             dataset_test = dataset.pop("test_5s")
             dataset["test"] = dataset_test
@@ -174,7 +195,7 @@ class MultiDataModule(BirdSetDataModule):
 
         for split in ["train", "test"]:
             dataset[split] = dataset[split].select_columns(
-                ["filepath", "labels_ebird", "labels_calltype", "detected_events", "start_time", "end_time"]
+                ["filepath", "labels_ebird", "labels_calltype", "labels_combined", "detected_events", "start_time", "end_time"]
             )
 
         return dataset

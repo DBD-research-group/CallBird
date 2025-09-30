@@ -33,6 +33,8 @@ class MultiTaskModule(BaseModule):
         **kwargs,
     ):
         self.num_combined_classes = num_combined_classes
+        # Placeholder for inferred mapping list[(ebird_idx, calltype_idx)] aligned with labels_combined ordering.
+        self._combined_mapping: Optional[list[tuple[int, int]]] = None
         
         if metrics_combined is None:
             metrics_combined = MetricCollection(
@@ -95,21 +97,98 @@ class MultiTaskModule(BaseModule):
 
         return total_loss, logits_ebird, labels_ebird, logits_calltype, labels_calltype
 
+    # -------------------------------- Mapping & Joint Logic ---------------------------------
+    def _ensure_combined_mapping(self):
+        """Infer (ebird_idx, calltype_idx) per combined class.
+
+        Simplified assumption (per dataset construction): combined label strings were created as
+            f"{ebird_code}_{call_type}"
+        where ebird_code itself never contains an underscore, but call_type MAY contain underscores.
+        Therefore we must split at the FIRST underscore, not the last one.
+
+        Requirements:
+          - data_module.combined_labels: list[str] with ordering matching one-hot encoding of labels_combined
+          - data_module.ebird_labels / calltype_labels: species and call type vocab lists
+        """
+        if self._combined_mapping is not None:
+            return
+        # Access the datamodule lazily through trainer (ensures setup has run)
+        if self.trainer is None or self.trainer.datamodule is None:
+            raise RuntimeError("Trainer or datamodule not attached yet; mapping requested too early.")
+        dm = self.trainer.datamodule
+        if not all(hasattr(dm, attr) for attr in ["combined_labels", "ebird_labels", "calltype_labels"]):
+            raise RuntimeError(
+                "Datamodule must define combined_labels, ebird_labels, calltype_labels after setup before mapping can be built."
+            )
+        ebird_index = {lbl: i for i, lbl in enumerate(dm.ebird_labels)}
+        call_index = {lbl: i for i, lbl in enumerate(dm.calltype_labels)}
+        mapping: list[tuple[int, int]] = []
+        for combined in dm.combined_labels:
+            if "_" not in combined:
+                raise ValueError(
+                    f"Combined label '{combined}' missing '_' delimiter expected from construction."
+                )
+            # Split at the FIRST underscore: species code first token, remainder is full call type (may contain underscores)
+            sp, ct = combined.split("_", 1)
+            if sp not in ebird_index:
+                raise ValueError(
+                    f"Species part '{sp}' from combined label '{combined}' not found in ebird vocabulary."
+                )
+            if ct not in call_index:
+                raise ValueError(
+                    f"Call type part '{ct}' from combined label '{combined}' not found in call type vocabulary."
+                )
+            mapping.append((ebird_index[sp], call_index[ct]))
+
+        if len(mapping) != self.num_combined_classes:
+            raise ValueError(
+                f"Inferred mapping length {len(mapping)} != num_combined_classes {self.num_combined_classes}"
+            )
+        self._combined_mapping = mapping
+
+    def _joint_logits_and_targets(
+        self,
+        logits_ebird: torch.Tensor,
+        logits_calltype: torch.Tensor,
+        targets_ebird: torch.Tensor,
+        targets_calltype: torch.Tensor,
+        batch: dict,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return joint (combined) logits and targets aligned with labels_combined ordering.
+
+        If batch contains 'labels_combined' we take those as the target multi-hot vector. Otherwise we derive
+        targets via logical AND of the individual heads at mapped indices.
+        Joint probability p_combo = sigmoid(l_e[i]) * sigmoid(l_c[j]); transformed back to logits for metric
+        compatibility with naive combined head.
+        """
+        self._ensure_combined_mapping()
+        mapping = self._combined_mapping  # type: ignore
+        probs_e = torch.sigmoid(logits_ebird)
+        probs_c = torch.sigmoid(logits_calltype)
+        device = probs_e.device
+        ebird_idx = torch.as_tensor([m[0] for m in mapping], device=device)
+        call_idx = torch.as_tensor([m[1] for m in mapping], device=device)
+        joint_probs = probs_e[:, ebird_idx] * probs_c[:, call_idx]
+        joint_logits = torch.logit(joint_probs.clamp(1e-6, 1 - 1e-6))
+
+        if "labels_combined" in batch:
+            joint_targets = batch["labels_combined"].int()
+        else:
+            tgt_e = targets_ebird.int()[:, ebird_idx]
+            tgt_c = targets_calltype.int()[:, call_idx]
+            joint_targets = (tgt_e & tgt_c).int()
+        return joint_logits, joint_targets
+
     def training_step(self, batch, batch_idx):
         loss, logits_ebird, targets_ebird, logits_calltype, targets_calltype = self.model_step(batch, batch_idx)
 
         self.log(f"train/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
         self.train_metric_ebird(logits_ebird, targets_ebird.int())
         self.train_metric_calltype(logits_calltype, targets_calltype.int())
-        
-        logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
-        targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
-
-        pad_size = self.num_combined_classes - logits_combined.shape[1]
-        logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
-        targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
-
-        self.train_metric_combined.update(logits_combined, targets_combined)
+        joint_logits, joint_targets = self._joint_logits_and_targets(
+            logits_ebird, logits_calltype, targets_ebird, targets_calltype, batch
+        )
+        self.train_metric_combined.update(joint_logits, joint_targets)
 
         self.log(f"train/ebird_{self.train_metric_ebird.__class__.__name__}", self.train_metric_ebird, **asdict(self.logging_params))
         self.log(f"train/calltype_{self.train_metric_calltype.__class__.__name__}", self.train_metric_calltype, **asdict(self.logging_params))
@@ -123,15 +202,10 @@ class MultiTaskModule(BaseModule):
         self.log(f"val/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
         self.val_metric_ebird(logits_ebird, targets_ebird.int())
         self.val_metric_calltype(logits_calltype, targets_calltype.int())
-
-        logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
-        targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
-
-        pad_size = self.num_combined_classes - logits_combined.shape[1]
-        logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
-        targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
-        
-        self.val_metric_combined.update(logits_combined, targets_combined)
+        joint_logits, joint_targets = self._joint_logits_and_targets(
+            logits_ebird, logits_calltype, targets_ebird, targets_calltype, batch
+        )
+        self.val_metric_combined.update(joint_logits, joint_targets)
 
         self.log(f"val/ebird_{self.val_metric_ebird.__class__.__name__}", self.val_metric_ebird, **asdict(self.logging_params))
         self.log(f"val/calltype_{self.val_metric_calltype.__class__.__name__}", self.val_metric_calltype, **asdict(self.logging_params))
@@ -145,15 +219,10 @@ class MultiTaskModule(BaseModule):
         self.log(f"test/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
         self.test_metric_ebird(logits_ebird, targets_ebird.int())
         self.test_metric_calltype(logits_calltype, targets_calltype.int())
-
-        logits_combined = torch.cat([logits_ebird, logits_calltype], dim=1)
-        targets_combined = torch.cat([targets_ebird, targets_calltype], dim=1).int()
-
-        pad_size = self.num_combined_classes - logits_combined.shape[1]
-        logits_combined = torch.nn.functional.pad(logits_combined, (0, pad_size), "constant", 0)
-        targets_combined = torch.nn.functional.pad(targets_combined, (0, pad_size), "constant", 0)
-
-        self.test_metric_combined.update(logits_combined, targets_combined)
+        joint_logits, joint_targets = self._joint_logits_and_targets(
+            logits_ebird, logits_calltype, targets_ebird, targets_calltype, batch
+        )
+        self.test_metric_combined.update(joint_logits, joint_targets)
 
         self.log(f"test/ebird_{self.test_metric_ebird.__class__.__name__}", self.test_metric_ebird, **asdict(self.logging_params))
         self.log(f"test/calltype_{self.test_metric_calltype.__class__.__name__}", self.test_metric_calltype, **asdict(self.logging_params))

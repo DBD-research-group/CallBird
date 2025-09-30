@@ -136,6 +136,12 @@ class NaiveDataModule(BirdSetDataModule):
                 )
 
             dataset = dataset.rename_column("ebird_code_multilabel", "labels_ebird")
+            # Add alias labels_combined for comparability with MultiDataModule
+            dataset = dataset.map(
+                lambda ex: {**ex, "labels_combined": ex["labels_ebird"]},
+                batched=False,
+                desc="Alias combined labels",
+            )
 
             dataset_test = dataset.pop("test_5s")
             dataset["test"] = dataset_test
@@ -144,7 +150,7 @@ class NaiveDataModule(BirdSetDataModule):
 
         for split in ["train", "test"]:
             dataset[split] = dataset[split].select_columns(
-                ["filepath", "labels_ebird", "detected_events", "start_time", "end_time"]
+                ["filepath", "labels_ebird", "labels_combined", "detected_events", "start_time", "end_time"]
             )
 
         return dataset
