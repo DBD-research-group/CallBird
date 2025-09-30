@@ -32,7 +32,7 @@ def load_train_dataset(
     blacklist_ebird = readCommentedList("/workspace/projects/callbird/datastats/train/blacklist_ebird.txt")
     dataset = dataset.filter(lambda x: x["ebird_code"] not in blacklist_ebird)
 
-    if limit_samples != None:
+    if limit_samples != None and limit_samples == True:
         # Limit the number of "NA" ebird_code entries to 6000
         na_dataset = dataset.filter(lambda x: x["ebird_code"] == "NA")
         other_dataset = dataset.filter(lambda x: x["ebird_code"] != "NA")
