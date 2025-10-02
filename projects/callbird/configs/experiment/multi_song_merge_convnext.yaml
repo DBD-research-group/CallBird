@@ -1,0 +1,18 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - multi_song_merge.yaml
+
+module:
+  network:
+    model:
+      _target_: projects.callbird.src.models.ConvNextMultiLayers.ConvNextMultiLayers
+      pretrain_info: null
+      freeze_backbone: True
+      variant: three
+      num_classes_calltype: ${module.network.num_classes_calltype}
+      num_classes_ebird: ${module.network.num_classes_ebird}
+
+logger:
+  wandb:
+    version: callbird_multi_song_merge_convnext_${start_time} 

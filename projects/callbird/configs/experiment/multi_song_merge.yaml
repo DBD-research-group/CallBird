@@ -1,0 +1,21 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - multi.yaml
+
+module:
+  network:
+    num_classes_ebird: 54
+    num_classes_calltype: 7
+    num_combined_classes: 97
+
+datamodule:
+  calltype_map: /workspace/projects/callbird/call_type_mappings/song_merge_map
+  filter_naive: False
+  unknown_ebird_code: NA
+  filter_unspecified: False
+  limit_samples: True
+
+logger:
+  wandb:
+    version: callbird_song_merge_classes_${start_time} 

@@ -1,0 +1,26 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - naive_song_merge.yaml
+
+module:
+  network:
+    model:
+      _target_: projects.callbird.src.models.EATSingleLayer.EATSingleLayer
+      pretrain_info: null
+      freeze_backbone: True
+      num_combined_classes: ${module.network.num_combined_classes}
+      nf: 16
+      seq_len: 110250
+      embed_dim: 128
+      n_layers: 4
+      nhead: 8
+      factors: [4, 4, 4, 4]
+      dim_feedforward: 512
+    model_type: waveform
+    normalize_spectrogram: False
+    normalize_waveform: instance_min_max
+
+logger:
+  wandb:
+    version: callbird_naive_song_merge_eat_${start_time} 
