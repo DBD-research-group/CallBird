@@ -9,7 +9,7 @@ module:
   network:
     model:
       freeze_backbone: False
-      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-09-27_211913/callback_checkpoints/convnext_callbird_09.ckpt
+      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-09-27_211913/callback_checkpoints/last.ckpt
 
 datamodule:
   _target_: projects.callbird.src.datasets.naive.NaiveTestDataModule.NaiveTestDataModule
