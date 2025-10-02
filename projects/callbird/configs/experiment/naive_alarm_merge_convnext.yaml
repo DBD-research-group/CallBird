@@ -1,0 +1,16 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - naive_alarm_merge.yaml
+
+module:
+  network:
+    model:
+      _target_: projects.callbird.src.models.ConvNextSingleLayer.ConvNextSingleLayer
+      pretrain_info: null
+      freeze_backbone: True
+      num_combined_classes: ${module.network.num_combined_classes}
+
+logger:
+  wandb:
+    version: callbird_naive_alarm_merge_convnext_${start_time} 

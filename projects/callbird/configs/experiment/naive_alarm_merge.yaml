@@ -1,0 +1,19 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - naive.yaml
+
+module:
+  network:
+    num_combined_classes: 97
+
+datamodule:
+  calltype_map: /workspace/projects/callbird/call_type_mappings/alarm_merge_map
+  unknown_ebird_code: NA
+  num_combined_classes: ${module.network.num_combined_classes}
+  filter_unspecified: False
+  limit_samples: True
+
+logger:
+  wandb:
+    version: callbird_naive_alarm_merge_${start_time} 

@@ -1,0 +1,10 @@
+# @package _global_
+#package global is neccessary!
+defaults:
+  - naive_alarm_merge_convnext.yaml
+
+train: True
+
+datamodule:
+  _target_: projects.callbird.src.datasets.naive.NaiveTrainDataModule.NaiveTrainDataModule
+  filter_naive: /workspace/projects/callbird/blacklists/alarm_merge_train.txt
