@@ -3,6 +3,8 @@
 defaults:
   - naive_alarm_merge_eat_train.yaml
 
+seed: 10
+
 module:
   network:
     model:
@@ -10,4 +12,4 @@ module:
       local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-10-02_130852/callback_checkpoints/last.ckpt
 
 trainer:
-  devices: [3]
+  devices: [1]
