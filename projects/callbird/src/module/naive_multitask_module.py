@@ -1,6 +1,5 @@
 from dataclasses import asdict
 from typing import Type, Optional
-import torch
 from torch.nn import BCEWithLogitsLoss
 from torch.nn.modules.loss import _Loss
 from torch.optim import AdamW, Optimizer
@@ -29,7 +28,6 @@ class NaiveMultiTaskModule(BaseModule):
         metrics_ebird: MultilabelMetricsConfig = MultilabelMetricsConfig(),
         metrics_combined: MetricCollection | None = None,
         logging_params: LoggingParamsConfig = LoggingParamsConfig(),
-        debug: bool = False,
         **kwargs,
     ):
         if metrics_combined is None:
@@ -55,7 +53,6 @@ class NaiveMultiTaskModule(BaseModule):
             **kwargs,
         )
         self.logging_params = logging_params
-        self.debug = debug
 
         # Metrics for ebird_code task
         self.train_metric_ebird = metrics_ebird.main_metric.clone()
@@ -80,98 +77,7 @@ class NaiveMultiTaskModule(BaseModule):
         outputs = self.forward(input_values=input_values)
         logits_ebird = outputs["ebird_code"]
 
-        # --- Debug instrumentation -------------------------------------------------
-        if True:
-            log_this_step = (self.global_step < 5) or (self.global_step % 500 == 0)
-            if log_this_step:
-                try:
-                    with torch.no_grad():
-                        # Basic input checks
-                        if not torch.isfinite(input_values).all():
-                            print(
-                                f"[DEBUG][step={self.global_step}] Non-finite input_values detected: "
-                                f"nan={(~torch.isfinite(input_values)).logical_and(torch.isnan(input_values)).sum().item()} "
-                                f"inf={torch.isinf(input_values).sum().item()}"
-                            )
-                        num_ebird_classes = logits_ebird.shape[-1]
-                        max_label_val = labels_ebird.max().item()
-                        min_label_val = labels_ebird.min().item()
-                        positives_per_sample = labels_ebird.sum(dim=-1)
-                        max_pos = positives_per_sample.max().item()
-                        mean_pos = positives_per_sample.float().mean().item()
-                        gt_over_one = (labels_ebird > 1).sum().item()
-                        # Logits stats
-                        logits_min = logits_ebird.min().item()
-                        logits_max = logits_ebird.max().item()
-                        logits_mean = logits_ebird.mean().item()
-                        logits_std = logits_ebird.std().item()
-                        logits_abs_max = logits_ebird.abs().max().item()
-                        extreme_50 = (logits_ebird.abs() > 50).float().mean().item()
-                        extreme_80 = (logits_ebird.abs() > 80).float().mean().item()
-                        non_finite_logits = (~torch.isfinite(logits_ebird)).sum().item()
-                        msg = (
-                            f"[DEBUG][step={self.global_step}] ebird logits shape={tuple(logits_ebird.shape)} "
-                            f"num_classes={num_ebird_classes} labels_range=[{min_label_val},{max_label_val}] "
-                            f"mean_pos={mean_pos:.2f} max_pos={max_pos} count_vals_gt_1={gt_over_one} "
-                            f"logits[min={logits_min:.2f},max={logits_max:.2f},mean={logits_mean:.2f},std={logits_std:.2f},|max|={logits_abs_max:.2f}] "
-                            f"extreme>|50|={extreme_50*100:.2f}% extreme>|80|={extreme_80*100:.2f}% non_finite={non_finite_logits}"
-                        )
-                        if 'labels_calltype' in batch:
-                            labels_call = batch['labels_calltype']
-                            num_call_classes = labels_call.shape[-1]
-                            call_max = labels_call.max().item()
-                            call_min = labels_call.min().item()
-                            call_over_one = (labels_call > 1).sum().item()
-                            call_mean_pos = labels_call.sum(dim=-1).float().mean().item()
-                            msg += (
-                                f" | calltype shape={tuple(labels_call.shape)} num_classes={num_call_classes} "
-                                f"range=[{call_min},{call_max}] mean_pos={call_mean_pos:.2f} gt_1={call_over_one}"
-                            )
-                        # Use Lightning logging if available, else print
-                        if hasattr(self.logger, 'log'):
-                            try:
-                                self.logger.log(msg)
-                            except Exception:
-                                print(msg)
-                        else:
-                            print(msg)
-                        # Hard assert to catch out-of-range targets early
-                        assert max_label_val <= 1 and min_label_val >= 0, (
-                            "Out-of-range ebird labels detected (not in [0,1]); check merge mapping."
-                        )
-                except Exception as debug_exc:
-                    print(f"[DEBUG] Failed to collect debug stats: {debug_exc}")
-        # --------------------------------------------------------------------------
-
         loss_ebird = self.loss(logits_ebird, labels_ebird)
-
-        if True and torch.isnan(loss_ebird):
-            print("[DEBUG] NaN loss encountered. Collecting diagnostics...")
-            with torch.no_grad():
-                finite_mask = torch.isfinite(logits_ebird)
-                if not finite_mask.all():
-                    print(f"[DEBUG] Non-finite logits count: {(~finite_mask).sum().item()}")
-                print(f"[DEBUG] logits abs max: {logits_ebird.abs().max().item():.4f}")
-                print(f"[DEBUG] logits sample (first row, first 10): {logits_ebird[0, :10].tolist()}")
-                print(f"[DEBUG] labels unique values: {torch.unique(labels_ebird)}")
-                nan_params = []
-                inf_params = []
-                for name, p in self.named_parameters():
-                    if p.requires_grad:
-                        if torch.isnan(p).any():
-                            nan_params.append(name)
-                        if torch.isinf(p).any():
-                            inf_params.append(name)
-                if nan_params:
-                    print(f"[DEBUG] Parameters containing NaN: {nan_params[:10]}{' (truncated)' if len(nan_params)>10 else ''}")
-                if inf_params:
-                    print(f"[DEBUG] Parameters containing Inf: {inf_params[:10]}{' (truncated)' if len(inf_params)>10 else ''}")
-                for name, p in list(self.named_parameters())[:5]:
-                    if p.requires_grad and torch.isfinite(p).all():
-                        print(
-                            f"[DEBUG] Param {name}: mean={p.data.mean():.4e} std={p.data.std():.4e} absmax={p.data.abs().max():.4e}"
-                        )
-            raise RuntimeError("NaN loss detected; see debug diagnostics above.")
         
         total_loss = loss_ebird
 

@@ -83,10 +83,7 @@ class EATMultiLayers(nn.Module):
         num_channels: int | None = None,  # it is set by default by convnext, so we need to ignore it here (to avoid errors)
         checkpoint: str | None = None,  # it is set by default by convnext, so we need to ignore it here (to avoid errors)
         cache_dir: str | None = None,  # it is set by default by convnext, so we need to ignore it here (to avoid errors)
-    pretrain_info: str | None = None,  # it is set by default by convnext, so we need to ignore it here (to avoid errors)
-    debug: bool = False,
-    stable_norm: bool = False,
-    sanitize_after_down2: bool = False,
+        pretrain_info: str | None = None,  # it is set by default by convnext, so we need to ignore it here (to avoid errors)
         **kwargs
     ):
         """
@@ -114,10 +111,7 @@ class EATMultiLayers(nn.Module):
             num_classes=9736,
             # "DBD-research-group/ConvNeXT-Base-BirdSet-XCL" if local_checkpoint is None else None,
             local_checkpoint="/workspace/projects/callbird/src/models/eat-checkpoint-20.ckpt" if local_checkpoint is None else None,
-            pretrain_info=None,
-            debug=debug,
-            stable_norm=stable_norm,
-            sanitize_after_down2=sanitize_after_down2,
+            pretrain_info=None
         )
 
         if freeze_backbone:
