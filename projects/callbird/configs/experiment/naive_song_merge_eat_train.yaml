@@ -10,4 +10,4 @@ datamodule:
   filter_naive: /workspace/projects/callbird/blacklists/song_merge_train.txt
 
 trainer:
-  devices: [3]
+  devices: [0]

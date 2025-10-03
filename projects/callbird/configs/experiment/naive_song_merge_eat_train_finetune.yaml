@@ -10,4 +10,4 @@ module:
       local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-09-30_224558/callback_checkpoints/last.ckpt
 
 trainer:
-  devices: [3]
+  devices: [0]
