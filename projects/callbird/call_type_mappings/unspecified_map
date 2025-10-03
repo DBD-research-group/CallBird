@@ -11,8 +11,8 @@ s2 (Zweitgesang) : song
 wb (Fluegelschlag) : NA
 nfc (Nachtzugruf) : other
 rs (Rufe am Schlafplatz) : other
-ac_b (Alarmruf_Bodenfeinde) : alarm
-ac_f (Alarmruf Luftfeinde) : alarm
+ac_b (Alarmruf_Bodenfeinde) : alarm_ground
+ac_f (Alarmruf Luftfeinde) : alarm_air
 NA : NA
 
 @test
@@ -23,10 +23,10 @@ something : filter
 drumming : drumming
 alarm call : alarm
 vocal : filter
-ground alarm call : alarm
+ground alarm call : alarm_ground
 call : filter
 whistle : other
-air alarm call : alarm
+air alarm call : alarm_air
 excitement call : excitement
 sub song : song
 NA : NA

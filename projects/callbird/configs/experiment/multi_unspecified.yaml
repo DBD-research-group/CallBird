@@ -6,14 +6,15 @@ defaults:
 module:
   network:
     num_classes_ebird: 54
-    num_classes_calltype: 7
-    num_combined_classes: 97
+    num_classes_calltype: 8
+    num_combined_classes: 98
 
 datamodule:
   calltype_map: /workspace/projects/callbird/call_type_mappings/unspecified_map
   filter_naive: False
   unknown_ebird_code: NA
   filter_unspecified: True
+  limit_samples: True
 
 logger:
   wandb:

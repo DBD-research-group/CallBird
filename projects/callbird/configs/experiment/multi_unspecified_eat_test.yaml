@@ -9,11 +9,11 @@ module:
   network:
     model:
       freeze_backbone: False
-      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-09-27_213044/callback_checkpoints/last.ckpt
+      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-10-03_140447/callback_checkpoints/last.ckpt
 
 datamodule:
   _target_: projects.callbird.src.datasets.multi.MultiTestDataModule.MultiTestDataModule
   filter_naive: /workspace/projects/callbird/blacklists/unspecified_test.txt
 
 trainer:
-  devices: [3]
+  devices: [0]
