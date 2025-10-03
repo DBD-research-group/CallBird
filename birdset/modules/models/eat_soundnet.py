@@ -172,9 +172,15 @@ class SoundNet(nn.Module):
         local_checkpoint: str | None = None,
         pretrain_info=None,
         device: str = "cuda:0",
+        debug: bool = True,
+        stable_norm: bool = True,
+        sanitize_after_down2: bool = True,
     ):
         super().__init__()
         self.device = device
+        self.debug = debug
+        self.stable_norm = stable_norm
+        self.sanitize_after_down2 = sanitize_after_down2
 
         if pretrain_info is not None:
             self.hf_path = pretrain_info.hf_path
@@ -228,6 +234,26 @@ class SoundNet(nn.Module):
             dim_feedforward=dim_feedforward,
         )
         self.apply(self._init_weights)
+
+        # Apply normalization stabilization if requested (replace BN with GN)
+        if self.stable_norm:
+            replaced = 0
+            for module_name, module in list(self.named_modules()):
+                if isinstance(module, nn.BatchNorm1d):
+                    gn = nn.GroupNorm(1, module.num_features, affine=True)
+                    # copy affine params if exist
+                    with torch.no_grad():
+                        gn.weight.copy_(module.weight.data)
+                        gn.bias.copy_(module.bias.data)
+                    # assign into parent
+                    parent = self
+                    parts = module_name.split('.')
+                    for p in parts[:-1]:
+                        parent = getattr(parent, p)
+                    setattr(parent, parts[-1], gn)
+                    replaced += 1
+            if self.debug:
+                print(f"[EAT DEBUG] stable_norm=True: replaced {replaced} BatchNorm1d layers with GroupNorm(1,C)")
         if local_checkpoint:
             log.info(f">> Loading state dict from local checkpoint: {local_checkpoint}")
             self.start.load_state_dict(
@@ -282,8 +308,28 @@ class SoundNet(nn.Module):
             input_values.unsqueeze_(1)
         # has to be (batch x 1 x length)
         x = self.start(input_values)
+        if self.debug and torch.isnan(x).any():
+            print("[EAT DEBUG] NaNs after start block")
         x = self.down(x)
+        if self.debug and torch.isnan(x).any():
+            print("[EAT DEBUG] NaNs after down block")
         x = self.down2(x)
+        if self.debug and torch.isnan(x).any():
+            print("[EAT DEBUG] NaNs after down2 block")
         x = self.project(x)
+        if self.debug and torch.isnan(x).any():
+            print("[EAT DEBUG] NaNs after project conv")
+        if self.sanitize_after_down2:
+            # Apply sanitation after project (post-down2 features)
+            before_non_finite = (~torch.isfinite(x)).sum().item()
+            if before_non_finite > 0 and self.debug:
+                print(f"[EAT DEBUG] Sanitizing {before_non_finite} non-finite values before transformer")
+            x = torch.nan_to_num(x, nan=0.0, posinf=1e4, neginf=-1e4)
+            if self.debug:
+                after_non_finite = (~torch.isfinite(x)).sum().item()
+                if after_non_finite == 0 and before_non_finite > 0:
+                    print("[EAT DEBUG] Sanitization removed all non-finite values.")
         pred = self.tf(x)
+        if self.debug and torch.isnan(pred).any():
+            print("[EAT DEBUG] NaNs after transformer aggregate")
         return pred
