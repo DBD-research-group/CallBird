@@ -19,6 +19,29 @@ def load_test_dataset(
             "start_time": Value("float"),
             "end_time": Value("float"),
             "audio_filename": Value("string"),
+
+            # shared
+            "high_freq": Value("float"),
+            "low_freq": Value("float"),
+            "lat": Value("float"),
+            "long": Value("float"),
+            "GPS_uncertainty_km": Value("float"),
+            "validator": Value("string"),
+            "validation_time": Value("string"),
+
+            #other specific
+            "project_code": Value("string"),
+            "recorder": Value("string"),
+            "pointofvocalization": Value("string"),
+            # "correct": Value("string"),
+            "time_UTC": Value("string"),
+            "tsn_code": Value("string"),
+            "GBIF_ID": Value("string"),
+            "scientific_name": Value("string"),
+            "subspecies": Value("string"),
+            "microphone": Value("string"),
+            "source": Value("string"),
+            "recordist": Value("string"),
         }),
         cache_dir = cache_dir,
         num_proc = 1,
@@ -54,6 +77,10 @@ def load_test_dataset(
 
     # Rename 'audio_filename' to 'filepath' to match what the base class expects
     dataset = dataset.rename_column("audio_filename", "filepath")
+
+    dataset = dataset.rename_column("GPS_uncertainty_km", "gps_uncertainty")
+    dataset = dataset.rename_column("validator", "validator_name")
+    dataset = dataset.rename_column("validation_time", "validation_date")
 
     # Setting absolute paths for the audio files
     def update_filepath(example):

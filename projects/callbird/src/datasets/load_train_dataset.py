@@ -17,6 +17,26 @@ def load_train_dataset(
             "start_sample [s]": Value("float"),
             "end_sample [s]": Value("float"),
             "actual_filename": Value("string"),
+
+            # shared
+            "high_freq [Hz]": Value("float"),
+            "low_freq [Hz]": Value("float"),
+            "latitude [WGS84]": Value("float"),
+            "longitude [WGS84]": Value("float"),
+            "uncertainty of GPS data [km]": Value("float"),
+            "name_of_validator": Value("string"),
+            "date_of_validation": Value("string"),
+
+            #other specific
+            "call_center [s]": Value("float"),
+            "randomised_call_center [s]": Value("float"),
+            "subspecies": Value("string"),
+            "sex": Value("string"),
+            # "correct": Value("string"),
+            # "confidence": Value("float"),
+            "date": Value("string"),
+            # "BirdNET Version": Value("string"),
+            "notes": Value("string"),
         }),
         delimiter=";",
         cache_dir = cache_dir,
@@ -67,6 +87,18 @@ def load_train_dataset(
     dataset = dataset.rename_column("start_sample [s]", "start_time")
     dataset = dataset.rename_column("end_sample [s]", "end_time")
     dataset = dataset.rename_column("actual_filename", "filepath")
+
+    dataset = dataset.rename_column("high_freq [Hz]", "high_freq")
+    dataset = dataset.rename_column("low_freq [Hz]", "low_freq")
+    dataset = dataset.rename_column("latitude [WGS84]", "lat")
+    dataset = dataset.rename_column("longitude [WGS84]", "long")
+    dataset = dataset.rename_column("uncertainty of GPS data [km]", "gps_uncertainty")
+    dataset = dataset.rename_column("name_of_validator", "validator_name")
+    dataset = dataset.rename_column("date_of_validation", "validation_date")
+
+    dataset = dataset.rename_column("randomised_call_center [s]", "rand_center")
+    dataset = dataset.rename_column("subspecies", "sub_species")
+    # dataset = dataset.rename_column("BirdNET Version", "birdnet_version")
 
     # Setting absolute paths for the audio files
     def update_filepath(example):
