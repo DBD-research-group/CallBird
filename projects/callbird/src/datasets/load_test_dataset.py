@@ -81,6 +81,8 @@ def load_test_dataset(
     dataset = dataset.rename_column("GPS_uncertainty_km", "gps_uncertainty")
     dataset = dataset.rename_column("validator", "validator_name")
     dataset = dataset.rename_column("validation_time", "validation_date")
+    dataset = dataset.rename_column("time_UTC", "time_utc")
+    dataset = dataset.rename_column("GBIF_ID", "gbif_id")
 
     # Setting absolute paths for the audio files
     def update_filepath(example):
