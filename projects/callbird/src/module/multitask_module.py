@@ -5,6 +5,8 @@ from torch.nn.modules.loss import _Loss
 from torch.optim import AdamW, Optimizer
 from functools import partial
 import torch
+import torch.nn as nn
+import math
 from torchmetrics import Accuracy, MetricCollection
 
 from birdset.modules.base_module import BaseModule
@@ -30,9 +32,12 @@ class MultiTaskModule(BaseModule):
         metrics_calltype: MultilabelMetricsConfig = MultilabelMetricsConfig(),
         metrics_combined: MetricCollection | None = None,
         logging_params: LoggingParamsConfig = LoggingParamsConfig(),
+        # If True, use homoscedastic uncertainty to dynamically weight task losses
+        dynamic_loss: bool = True,
         **kwargs,
     ):
         self.num_combined_classes = num_combined_classes
+        self.use_uncertainty_weighting = dynamic_loss
         # Placeholder for inferred mapping list[(ebird_idx, calltype_idx)] aligned with labels_combined ordering.
         self._combined_mapping: Optional[list[tuple[int, int]]] = None
         
@@ -60,6 +65,12 @@ class MultiTaskModule(BaseModule):
         )
         self.logging_params = logging_params
 
+        # Learnable log-variances for homoscedastic uncertainty weighting (per-task)
+        # s = log(sigma^2); effective weight = exp(-s)
+        if self.use_uncertainty_weighting:
+            self.log_var_ebird = nn.Parameter(torch.zeros(1))
+            self.log_var_calltype = nn.Parameter(torch.zeros(1))
+
         # Metrics for ebird_code task
         self.train_metric_ebird = metrics_ebird.main_metric.clone()
         self.val_metric_ebird = metrics_ebird.main_metric.clone()
@@ -83,6 +94,56 @@ class MultiTaskModule(BaseModule):
             metrics_ebird.val_metric_best.clone()
         )  # Use one of the val_metric_best
 
+    # ------------------------------- Optimizer & Checkpointing -------------------------------
+    def configure_optimizers(self):
+        """Ensure uncertainty parameters are optimized along with the model, mirroring BaseModule scheduling."""
+        # Model params group
+        param_groups = [{"params": self.model.parameters()}]
+        # Add uncertainty params without weight decay
+        if getattr(self, "use_uncertainty_weighting", False):
+            param_groups.append({
+                "params": [self.log_var_ebird, self.log_var_calltype],
+                "weight_decay": 0.0,
+            })
+
+        self.optimizer = self.optimizer(param_groups)
+        if self.lr_scheduler is not None:
+            num_training_steps = math.ceil(
+                (self.num_epochs * self.len_trainset) / self.batch_size * self.num_gpus
+            )
+            num_warmup_steps = math.ceil(
+                num_training_steps * self.lr_scheduler.warmup_ratio
+            )
+            self.scheduler = self.lr_scheduler.scheduler(
+                optimizer=self.optimizer,
+                num_training_steps=num_training_steps,
+                num_warmup_steps=num_warmup_steps,
+            )
+            scheduler_dict = {
+                "scheduler": self.scheduler,
+                "interval": self.lr_scheduler.interval,
+                "warmup_ratio": self.lr_scheduler.warmup_ratio,
+            }
+            return {"optimizer": self.optimizer, "lr_scheduler": scheduler_dict}
+
+        return {"optimizer": self.optimizer}
+
+    def load_state_dict(self, state_dict: dict, strict: bool = True):
+        """Allow loading checkpoints that predate the uncertainty params.
+
+        Falls back to non-strict to skip missing/extra keys for log_var_* while loading everything else.
+        """
+        result = super().load_state_dict(state_dict, strict=False)
+        # Optionally log info for visibility
+        missing = getattr(result, 'missing_keys', []) if hasattr(result, 'missing_keys') else []
+        unexpected = getattr(result, 'unexpected_keys', []) if hasattr(result, 'unexpected_keys') else []
+        if missing or unexpected:
+            try:
+                self.print(f"load_state_dict: missing={missing}, unexpected={unexpected}")
+            except Exception:
+                pass
+        return result
+
     def model_step(self, batch, batch_idx):
         input_values, labels_ebird, labels_calltype = batch["input_values"], batch["labels_ebird"], batch["labels_calltype"]
         
@@ -92,8 +153,17 @@ class MultiTaskModule(BaseModule):
 
         loss_ebird = self.loss(logits_ebird, labels_ebird)
         loss_calltype = self.loss(logits_calltype, labels_calltype)
-        
-        total_loss = loss_ebird + loss_calltype
+
+        # Dynamic weighting via homoscedastic uncertainty (Kendall et al. 2018)
+        if getattr(self, "use_uncertainty_weighting", False):
+            # Clamp to keep weights and the additive log-term in a sane range
+            s_e = self.log_var_ebird.clamp(min=-10.0, max=10.0)
+            s_c = self.log_var_calltype.clamp(min=-10.0, max=10.0)
+            # Paper-aligned per-task: exp(-s_i) * L_i + 0.5 * s_i  where s_i = log(sigma_i^2)
+            total_loss = torch.exp(-s_e) * loss_ebird + 0.5 * s_e
+            total_loss = total_loss + torch.exp(-s_c) * loss_calltype + 0.5 * s_c
+        else:
+            total_loss = loss_ebird + loss_calltype
 
         return total_loss, logits_ebird, labels_ebird, logits_calltype, labels_calltype
 
@@ -183,6 +253,20 @@ class MultiTaskModule(BaseModule):
         loss, logits_ebird, targets_ebird, logits_calltype, targets_calltype = self.model_step(batch, batch_idx)
 
         self.log(f"train/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
+        # Optionally log effective task weights for monitoring
+        if getattr(self, "use_uncertainty_weighting", False):
+            # Effective weights: w = exp(-s), with clamped s for stability in logs
+            s_e = self.log_var_ebird.detach().clamp(min=-10.0, max=10.0)
+            s_c = self.log_var_calltype.detach().clamp(min=-10.0, max=10.0)
+            w_e = torch.exp(-s_e)
+            w_c = torch.exp(-s_c)
+            self.log("train/weight_ebird", w_e.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("train/weight_calltype", w_c.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("train/s_ebird", s_e.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("train/s_calltype", s_c.item(), on_step=False, on_epoch=True, prog_bar=False)
+        # Log raw (unweighted) sum of task losses for reference (always non-negative)
+        raw_sum = self.loss(logits_ebird, targets_ebird) + self.loss(logits_calltype, targets_calltype)
+        self.log("train/raw_loss_sum", raw_sum, on_step=False, on_epoch=True, prog_bar=False)
         self.train_metric_ebird(logits_ebird, targets_ebird.int())
         self.train_metric_calltype(logits_calltype, targets_calltype.int())
         joint_logits, joint_targets = self._joint_logits_and_targets(
@@ -200,6 +284,17 @@ class MultiTaskModule(BaseModule):
         loss, logits_ebird, targets_ebird, logits_calltype, targets_calltype = self.model_step(batch, batch_idx)
 
         self.log(f"val/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
+        if getattr(self, "use_uncertainty_weighting", False):
+            s_e = self.log_var_ebird.detach().clamp(min=-10.0, max=10.0)
+            s_c = self.log_var_calltype.detach().clamp(min=-10.0, max=10.0)
+            w_e = torch.exp(-s_e)
+            w_c = torch.exp(-s_c)
+            self.log("val/weight_ebird", w_e.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("val/weight_calltype", w_c.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("val/s_ebird", s_e.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("val/s_calltype", s_c.item(), on_step=False, on_epoch=True, prog_bar=False)
+        raw_sum = self.loss(logits_ebird, targets_ebird) + self.loss(logits_calltype, targets_calltype)
+        self.log("val/raw_loss_sum", raw_sum, on_step=False, on_epoch=True, prog_bar=False)
         self.val_metric_ebird(logits_ebird, targets_ebird.int())
         self.val_metric_calltype(logits_calltype, targets_calltype.int())
         joint_logits, joint_targets = self._joint_logits_and_targets(
@@ -217,6 +312,17 @@ class MultiTaskModule(BaseModule):
         loss, logits_ebird, targets_ebird, logits_calltype, targets_calltype = self.model_step(batch, batch_idx)
 
         self.log(f"test/{self.loss.__class__.__name__}", loss, on_step=False, on_epoch=True, prog_bar=True)
+        if getattr(self, "use_uncertainty_weighting", False):
+            s_e = self.log_var_ebird.detach().clamp(min=-10.0, max=10.0)
+            s_c = self.log_var_calltype.detach().clamp(min=-10.0, max=10.0)
+            w_e = torch.exp(-s_e)
+            w_c = torch.exp(-s_c)
+            self.log("test/weight_ebird", w_e.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("test/weight_calltype", w_c.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("test/s_ebird", s_e.item(), on_step=False, on_epoch=True, prog_bar=False)
+            self.log("test/s_calltype", s_c.item(), on_step=False, on_epoch=True, prog_bar=False)
+        raw_sum = self.loss(logits_ebird, targets_ebird) + self.loss(logits_calltype, targets_calltype)
+        self.log("test/raw_loss_sum", raw_sum, on_step=False, on_epoch=True, prog_bar=False)
         self.test_metric_ebird(logits_ebird, targets_ebird.int())
         self.test_metric_calltype(logits_calltype, targets_calltype.int())
         joint_logits, joint_targets = self._joint_logits_and_targets(
