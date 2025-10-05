@@ -145,16 +145,21 @@ class EATMultiLayers(nn.Module):
         Args:
             checkpoint_path (str): Path to the checkpoint file.
         """
-        state_dict = torch.load(checkpoint_path, weights_only=False)["state_dict"]
-        
+        ckpt = torch.load(checkpoint_path, weights_only=False)
+        state_dict = ckpt["state_dict"] if isinstance(ckpt, dict) and "state_dict" in ckpt else ckpt
+
         # Adjust keys if they are prefixed (e.g., by a LightningModule)
         adjusted_state_dict = {}
         for key, value in state_dict.items():
-            new_key = key.replace("model.", "", 1) # remove 'model.' prefix
+            # Drop uncertainty weighting params from MultiTaskModule
+            if "log_var_ebird" in key or "log_var_calltype" in key:
+                continue
+            new_key = key.replace("model.", "", 1)  # remove 'model.' prefix once if present
             adjusted_state_dict[new_key] = value
-            
-        self.load_state_dict(adjusted_state_dict)
-        log.info(f"Loaded model weights from {checkpoint_path}")
+
+        # Load non-strictly to ignore any remaining non-matching keys
+        self.load_state_dict(adjusted_state_dict, strict=False)
+        log.info(f"Loaded model weights from {checkpoint_path} (filtered uncertainty params)")
 
     def forward(
         self, input_values: torch.Tensor, labels: Optional[torch.Tensor] = None

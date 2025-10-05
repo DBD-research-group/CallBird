@@ -7,7 +7,7 @@ module:
   network:
     model:
       freeze_backbone: False
-      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-10-03_124528/callback_checkpoints/last.ckpt
+      local_checkpoint: /workspace/logs/train/runs/callbird/convnext/2025-10-05_004853/callback_checkpoints/last.ckpt
 
 trainer:
   devices: [0]
